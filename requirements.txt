@@ -1,0 +1,11 @@
+matplotlib==3.2.2
+tensorflow==2.2.0
+numpy==1.19.0
+scipy==1.5.1
+sklearn
+keras==2.4.3
+tqdm==4.47.0
+joblib==0.16.0
+scikit-learn==0.23.1
+toml==0.10.1
+flake8

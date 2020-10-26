@@ -1,0 +1,11 @@
+# ignore folders
+/venv
+/inputs/trainedmodels
+/outputs
+
+# ignore python specific files
+__pycache__/
+*.py[cod]
+
+*.DS_Store
+.vscode/*

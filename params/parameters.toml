@@ -1,0 +1,109 @@
+[General]
+
+# plot settings
+plot_result = false
+plot_mse = false
+save_figures = true
+
+min_scale_plot = 0
+max_scale_plot = 0.01
+
+# LOAD AN ALREADY EXISTING MODEL FOR TRAINING
+bool_load_existingmodel = false
+
+# DEFINE SCALER MODE: 0 --> Standard_Dev; 1 --> MinMaxScaler; 2 --> Tanh-Scaler
+scaler_mode = 0  # Standatd_dev leads to better results, but slower learning
+shuffle_mode = 1    # 0 --> always different shuffeling; 1 --> Fixed shuffle number
+shuffle_number = 5
+datasetcount = 14   # how many dataset should be used for training (located in the folder inputs/trainingdata)
+
+# IF true, AN OLD TRANSFORMATION SCALE FROM PREVIOUS DATASETS IS USED
+use_old_transformation = false
+
+# IF true, THE SCALING MODE WILL BE SAVED
+save_scaling = true
+
+
+[NeuralNetwork_Settings]
+
+# 0 --> NO EXECUTION, 1 --> EXECUTION WITH FEEDFORWARD MODEL, 2 --> EXECUTION WITH RECURRENT MODEL
+model_mode = 1 # training of the neural network
+run_file_mode = 1 # vehicle data (ground trouth) replay and evaluation, comparsion of the neural network
+
+# THESE ARE THE TRAIN PARAMETERS OF THE NEURAL NETWORK
+batch_size = 500  # should no be set below 64
+val_split = 0.2
+test_split = 0.1
+epochs = 500
+
+# THESE ARE THE DESIGN PARAMETERS OF THE NEURAL NETWORK
+input_shape = 50
+output_shape = 5
+datasets = 10
+timesteps = 5
+learning_rate = 0.0002  # should not exceed 0.0005
+
+# WEIGHT REGULARIZATION
+l2regularization = 0.0001
+l1regularization = 0.0
+
+# DROPOUT PARAMS
+bool_use_dropout = false # true: apply dropout, false: do not apply dropout
+drop_1 = 0  # 0.2
+drop_2 = 0  # 0.1
+
+#Reduce LR Factor Callback
+reduceLR_factor = 0.8
+patience_LR = 10
+
+
+[NeuralNetwork_Settings.Feedforward]
+
+# NUMBER OF NEURONS FIRST AND SECOND LAYER
+neurons_first_layer = 50  # 300
+neurons_second_layer = 50  # 200
+
+# ACTIVATION FUNCTIONS OF THE LAYERS
+leakyrelu = 1  # if 1, you use leaky relu. activation 1+2 should be None
+activation_1 = 'None'
+activation_2 = 'None'
+
+
+[NeuralNetwork_Settings.Recurrent]
+
+# from tensorflow.keras.layers import GRU, LSTM, SimpleRNN, SimpleRNNCell, RNN
+recurrent_mode = 'GRU' # LSTM, GRU, SimpleRNN, ConvLSTM2D, RNN
+
+# NUMBER OF NEURONS OF FIRST AND SECOND LAYER
+neurons_first_layer_recurrent = 50
+neurons_second_layer_recurrent = 50
+
+# ACTIVATION FUNCTIONS OF THE RECURRENT LAYERS
+activation_1_recurrent = 'tanh'
+activation_dense_recurrent = 'tanh'
+
+
+[NeuralNetwork_Settings.Optimizer]
+
+# OPTIMIZER SET: ADAM, SGD, RMSPROP, ADADELTA, Nesterov-ADAM
+optimizer_set = 'Nesterov-ADAM'  # Nesterov-ADAM proofed to perform best 
+clipnorm = 1.0
+
+# LOSS FUNCTION
+loss_function = 'mean_squared_error'
+
+# THE FINAL LAYER SHOULD BE ACTIVIZED LINEARLY
+activation_end = 'linear'
+
+
+[Test]
+
+# PARAMETERS FOR THE RUN SEQUENCE
+run_timespan = 2500  # 500 # THE NUMBER IS THE TIMESPAN TIMES THE TIMESTEPS
+run_timestart = 0  # 62790  # 7640  # 5000 # 407,676s=101919
+n_steps = 5
+n_features = 10
+output_shape_recurrent = 5
+
+n_test = 37
+iteration_step = 2500
