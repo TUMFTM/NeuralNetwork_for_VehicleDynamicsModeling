@@ -32,8 +32,6 @@ def train_neuralnetwork(path_dict: dict,
     if not params_dict['General']['bool_load_existingmodel']:
         shutil.copyfile('params/parameters.toml',
                         os.path.join(path_dict['path2results'], 'settings_' + nn_mode + '.toml'))
-        shutil.copyfile('src/neural_network_fcn.py',
-                        os.path.join(path_dict['path2results'], 'settings_' + nn_mode + '_function.txt'))
 
     print('LOAD AND SCALE DATA')
 
@@ -85,7 +83,6 @@ def train_neuralnetwork(path_dict: dict,
                                        min_delta=min_delta)
 
     Nan = TerminateOnNaN()
-
 
     # Create a new neural network model or loads an existing one.
     model = src.neural_network_fcn.create_nnmodel(path_dict=path_dict,

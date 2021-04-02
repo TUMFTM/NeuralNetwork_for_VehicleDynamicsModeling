@@ -42,17 +42,17 @@ def plot_run(path_dict: dict,
     with open(path_dict['filepath2inputs_testdata'] + '.csv', 'r') as fh:
         labels = np.loadtxt(fh, delimiter=',')
 
-    yaw_result = np.array(results[:, 0])
-    vy_result = np.array(results[:, 1])
-    vx_result = np.array(results[:, 2])
-    ay_result = np.array(results[:, 3])
-    ax_result = np.array(results[:, 4])
+    vx_result = results[:, 0][:, np.newaxis]
+    vy_result = results[:, 1][:, np.newaxis]
+    yaw_result = results[:, 2][:, np.newaxis]
+    ax_result = results[:, 3][:, np.newaxis]
+    ay_result = results[:, 4][:, np.newaxis]
 
-    yaw_label = np.array(labels[start:params_dict['Test']['run_timespan'] + start, 0])
-    vy_label = np.array(labels[start:params_dict['Test']['run_timespan'] + start, 1])
-    vx_label = np.array(labels[start:params_dict['Test']['run_timespan'] + start, 2])
-    ay_label = np.array(labels[start:params_dict['Test']['run_timespan'] + start, 3])
-    ax_label = np.array(labels[start:params_dict['Test']['run_timespan'] + start, 4])
+    vx_label = labels[start:params_dict['Test']['run_timespan'] + start, 0][:, np.newaxis]
+    vy_label = labels[start:params_dict['Test']['run_timespan'] + start, 1][:, np.newaxis]
+    yaw_label = labels[start:params_dict['Test']['run_timespan'] + start, 2][:, np.newaxis]
+    ax_label = labels[start:params_dict['Test']['run_timespan'] + start, 3][:, np.newaxis]
+    ay_label = labels[start:params_dict['Test']['run_timespan'] + start, 4][:, np.newaxis]
 
     yaw_diff = yaw_label - yaw_result
     vy_diff = vy_label - vy_result
@@ -60,80 +60,70 @@ def plot_run(path_dict: dict,
     ay_diff = ay_label - ay_result
     ax_diff = ax_label - ax_result
 
+    # calculate scaled results
     scaler_results = MinMaxScaler(feature_range=(0, 1))
 
-    yaw_result = np.reshape(yaw_result, (len(yaw_result), 1))
-    vy_result = np.reshape(vy_result, (len(vy_result), 1))
-    vx_result = np.reshape(vx_result, (len(vx_result), 1))
-    ay_result = np.reshape(ay_result, (len(ay_result), 1))
-    ax_result = np.reshape(ax_result, (len(ax_result), 1))
-
-    yaw_label = np.reshape(yaw_label, (len(yaw_label), 1))
-    vy_label = np.reshape(vy_label, (len(vy_label), 1))
-    vx_label = np.reshape(vx_label, (len(vx_label), 1))
-    ay_label = np.reshape(ay_label, (len(ay_label), 1))
-    ax_label = np.reshape(ax_label, (len(ax_label), 1))
-
-    scaler_temp_result = np.concatenate((yaw_result, vy_result, vx_result, ay_result, ax_result), axis=1)
-    scaler_temp_label = np.concatenate((yaw_label, vy_label, vx_label, ay_label, ax_label), axis=1)
+    scaler_temp_result = np.concatenate((vx_result, vy_result, yaw_result, ax_result, ay_result), axis=1)
+    scaler_temp_label = np.concatenate((vx_label, vy_label, yaw_label, ax_label, ay_label), axis=1)
     scaler_temp = np.concatenate((scaler_temp_result, scaler_temp_label), axis=0)
 
     scaler_results = scaler_results.fit(scaler_temp)
     scaler_temp_result = scaler_results.transform(scaler_temp_result)
     scaler_temp_label = scaler_results.transform(scaler_temp_label)
 
-    yaw_result_scaled = scaler_temp_result[:, 0]
+    vx_result_scaled = scaler_temp_result[:, 0]
     vy_result_scaled = scaler_temp_result[:, 1]
-    vx_result_scaled = scaler_temp_result[:, 2]
-    ay_result_scaled = scaler_temp_result[:, 3]
-    ax_result_scaled = scaler_temp_result[:, 4]
+    yaw_result_scaled = scaler_temp_result[:, 2]
+    ax_result_scaled = scaler_temp_result[:, 3]
+    ay_result_scaled = scaler_temp_result[:, 4]
 
-    yaw_label_scaled = scaler_temp_label[:, 0]
+    vx_label_scaled = scaler_temp_label[:, 0]
     vy_label_scaled = scaler_temp_label[:, 1]
-    vx_label_scaled = scaler_temp_label[:, 2]
-    ay_label_scaled = scaler_temp_label[:, 3]
-    ax_label_scaled = scaler_temp_label[:, 4]
+    yaw_label_scaled = scaler_temp_label[:, 2]
+    ax_label_scaled = scaler_temp_label[:, 3]
+    ay_label_scaled = scaler_temp_label[:, 4]
 
+    # print deviation from label
     print('\n')
     print('MSE AND MAE OF UNSCALED VALUES')
     print('\n')
 
-    print('MSE of Yaw No.   ' + str(counter) + ':   ' + str(round(mean_squared_error(yaw_label, yaw_result), 8)))
-    print('MSE of Vy No.    ' + str(counter) + ':   ' + str(round(mean_squared_error(vy_label, vy_result), 8)))
-    print('MSE of Vx No.    ' + str(counter) + ':   ' + str(round(mean_squared_error(vx_label, vx_result), 8)))
-    print('MSE of ay No.    ' + str(counter) + ':   ' + str(round(mean_squared_error(ay_label, ay_result), 8)))
-    print('MSE of ax No.    ' + str(counter) + ':   ' + str(round(mean_squared_error(ax_label, ax_result), 8)) + '\n')
+    print('MSE of Yaw No. ' + str(counter) + ': ' + str(round(mean_squared_error(yaw_label, yaw_result), 8)))
+    print('MSE of Vy No.  ' + str(counter) + ': ' + str(round(mean_squared_error(vy_label, vy_result), 8)))
+    print('MSE of Vx No.  ' + str(counter) + ': ' + str(round(mean_squared_error(vx_label, vx_result), 8)))
+    print('MSE of ay No.  ' + str(counter) + ': ' + str(round(mean_squared_error(ay_label, ay_result), 8)))
+    print('MSE of ax No.  ' + str(counter) + ': ' + str(round(mean_squared_error(ax_label, ax_result), 8)) + '\n')
 
-    print('MAE of Yaw No    ' + str(counter) + ':   ' + str(round(mean_absolute_error(yaw_label, yaw_result), 8)))
-    print('MAE of Vy No.    ' + str(counter) + ':   ' + str(round(mean_absolute_error(vy_label, vy_result), 8)))
-    print('MAE of Vx No.    ' + str(counter) + ':   ' + str(round(mean_absolute_error(vx_label, vx_result), 8)))
-    print('MAE of ay No.    ' + str(counter) + ':   ' + str(round(mean_absolute_error(ay_label, ay_result), 8)))
-    print('MAE of ax No.    ' + str(counter) + ':   ' + str(round(mean_absolute_error(ax_label, ax_result), 8)))
+    print('MAE of Yaw No ' + str(counter) + ': ' + str(round(mean_absolute_error(yaw_label, yaw_result), 8)))
+    print('MAE of Vy No. ' + str(counter) + ': ' + str(round(mean_absolute_error(vy_label, vy_result), 8)))
+    print('MAE of Vx No. ' + str(counter) + ': ' + str(round(mean_absolute_error(vx_label, vx_result), 8)))
+    print('MAE of ay No. ' + str(counter) + ': ' + str(round(mean_absolute_error(ay_label, ay_result), 8)))
+    print('MAE of ax No. ' + str(counter) + ': ' + str(round(mean_absolute_error(ax_label, ax_result), 8)))
 
     print('\n')
     print('MSE AND MAE OF SCALED VALUES')
     print('\n')
 
-    print('MSE of Yaw No.   ' + str(counter) + ':   '
+    print('MSE of Yaw No. ' + str(counter) + ': '
           + str(round(mean_squared_error(yaw_label_scaled, yaw_result_scaled), 8)))
-    print('MSE of Vy No.    ' + str(counter) + ':   '
+    print('MSE of Vy No.  ' + str(counter) + ': '
           + str(round(mean_squared_error(vy_label_scaled, vy_result_scaled), 8)))
-    print('MSE of Vx No.    ' + str(counter) + ':   '
+    print('MSE of Vx No.  ' + str(counter) + ': '
           + str(round(mean_squared_error(vx_label_scaled, vx_result_scaled), 8)))
-    print('MSE of ay No.    ' + str(counter) + ':   '
+    print('MSE of ay No.  ' + str(counter) + ': '
           + str(round(mean_squared_error(ay_label_scaled, ay_result_scaled), 8)))
-    print('MSE of ax No.    ' + str(counter) + ':   '
+    print('MSE of ax No.  ' + str(counter) + ': '
           + str(round(mean_squared_error(ax_label_scaled, ax_result_scaled), 8)) + '\n')
 
-    print('MAE of Yaw No    ' + str(counter) + ':   '
+    print('MAE of Yaw No. ' + str(counter) + ': '
           + str(round(mean_absolute_error(yaw_label_scaled, yaw_result_scaled), 8)))
-    print('MAE of Vy No.    ' + str(counter) + ':   '
+    print('MAE of Vy No.  ' + str(counter) + ': '
           + str(round(mean_absolute_error(vy_label_scaled, vy_result_scaled), 8)))
-    print('MAE of Vx No.    ' + str(counter) + ':   '
+    print('MAE of Vx No.  ' + str(counter) + ': '
           + str(round(mean_absolute_error(vx_label_scaled, vx_result_scaled), 8)))
-    print('MAE of ay No.    ' + str(counter) + ':   '
+    print('MAE of ay No.  ' + str(counter) + ': '
           + str(round(mean_absolute_error(ay_label_scaled, ay_result_scaled), 8)))
-    print('MAE of ax No.    ' + str(counter) + ':   '
+    print('MAE of ax No.  ' + str(counter) + ': '
           + str(round(mean_absolute_error(ax_label_scaled, ax_result_scaled), 8)))
 
     # plot and save comparsion between NN predicted and actual vehicle state
@@ -191,6 +181,7 @@ def plot_and_save(params_dict: dict,
 
     if params_dict['General']['save_figures']:
         fig.savefig(savename, format='pdf')
+        plt.close(fig)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

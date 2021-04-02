@@ -12,8 +12,17 @@ Created on: 01.04.2020
 
 def scaler(path_dict: dict,
            params_dict: dict,
-           dataset):
-    """doc string
+           dataset: np.array) -> np.array:
+    """Scales dataset during preprocessing.
+
+    :param path_dict:           dictionary which contains paths to all relevant folders and files of this module
+    :type path_dict: dict
+    :param params_dict:         dictionary which contains all parameters necessary to run this module
+    :type params_dict: dict
+    :param dataset:             dataset which should get scaled
+    :type dataset: np.array
+    :return:                    scaled dataset
+    :rtype: np.array
     """
 
     if params_dict['General']['use_old_transformation']:
@@ -61,9 +70,11 @@ def scaler(path_dict: dict,
     return dataset_out
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+
 def scaler_run(path2scaler: str,
                params_dict: dict,
-               dataset):
+               dataset: np.array):
     """doc string
     """
 
@@ -80,10 +91,21 @@ def scaler_run(path2scaler: str,
     return dataset_out
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+
 def scaler_reverse(path2scaler: str,
                    params_dict: dict,
-                   dataset):
-    """doc string
+                   dataset: np.array) -> np.array:
+    """Rescaled dataset to physical quantities.
+
+    :param path_dict:           dictionary which contains paths to all relevant folders and files of this module
+    :type path_dict: dict
+    :param params_dict:         dictionary which contains all parameters necessary to run this module
+    :type params_dict: dict
+    :param dataset:             dataset which should get rescaled
+    :type dataset: np.array
+    :return:                    rescaled dataset
+    :rtype: np.array
     """
 
     print('TRANSFORM RESULT WITH SCALER TO PHYSICAL QUANTITIES')
@@ -101,41 +123,38 @@ def scaler_reverse(path2scaler: str,
     return dataset_std_rev
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+
 def create_dataset_separation_run(data_in,
                                   params_dict: dict,
                                   start,
                                   duration,
                                   mode):
 
-    initials = data_in[start:start + params_dict['NeuralNetwork_Settings']['timesteps'], :]
+    input_shape = params_dict['NeuralNetwork_Settings']['input_shape']
+    output_shape = params_dict['NeuralNetwork_Settings']['output_shape']
+    input_timesteps = params_dict['NeuralNetwork_Settings']['input_timesteps']
+
+    initials = data_in[start:start + input_timesteps, :]
 
     if mode == 0:
-        initials = np.reshape(initials, (1,
-                                         params_dict['NeuralNetwork_Settings']['timesteps']
-                                         * params_dict['NeuralNetwork_Settings']['datasets']))
+        initials = np.reshape(initials, (1, input_timesteps * input_shape))
 
     if mode == 1:
-        initials = np.reshape(initials, (1,
-                                         params_dict['NeuralNetwork_Settings']['timesteps'],
-                                         params_dict['NeuralNetwork_Settings']['datasets']))
+        initials = np.reshape(initials, (1, input_timesteps, input_shape))
 
-    sta_ang = data_in[start + params_dict['NeuralNetwork_Settings']['timesteps']:start + duration,
-                      params_dict['NeuralNetwork_Settings']['output_shape']]
+    steeringangle_rad = data_in[start + input_timesteps:start + duration, output_shape]
 
-    force_rl = data_in[start + params_dict['NeuralNetwork_Settings']['timesteps']:start + duration,
-                       params_dict['NeuralNetwork_Settings']['output_shape'] + 1]
+    torqueRL_Nm = data_in[start + input_timesteps:start + duration, output_shape + 1]
+    torqueRR_Nm = data_in[start + input_timesteps:start + duration, output_shape + 2]
 
-    force_rr = data_in[start + params_dict['NeuralNetwork_Settings']['timesteps']:start + duration,
-                       params_dict['NeuralNetwork_Settings']['output_shape'] + 2]
+    brakepresF_bar = data_in[start + input_timesteps:start + duration, output_shape + 3]
+    brakepresR_bar = data_in[start + input_timesteps:start + duration, output_shape + 4]
 
-    brakef = data_in[start + params_dict['NeuralNetwork_Settings']['timesteps']:start + duration,
-                     params_dict['NeuralNetwork_Settings']['output_shape'] + 3]
+    return initials, steeringangle_rad, torqueRL_Nm, torqueRR_Nm, brakepresF_bar, brakepresR_bar
 
-    braker = data_in[start + params_dict['NeuralNetwork_Settings']['timesteps']:start + duration,
-                     params_dict['NeuralNetwork_Settings']['output_shape'] + 4]
 
-    return initials, sta_ang, force_rl, force_rr, brakef, braker
-
+# ----------------------------------------------------------------------------------------------------------------------
 
 def extract_part(datax,
                  params_dict: dict,
@@ -144,14 +163,16 @@ def extract_part(datax,
 
     summ = np.sum(data_infox[0:1 + z, :])
     data_part = datax[summ - data_infox[z, 0]:summ, :]
-    labels_part = data_part[2 * params_dict['NeuralNetwork_Settings']['timesteps']
-                            - 1::params_dict['NeuralNetwork_Settings']['timesteps'],
+    labels_part = data_part[2 * params_dict['NeuralNetwork_Settings']['input_timesteps']
+                            - 1::params_dict['NeuralNetwork_Settings']['input_timesteps'],
                             0:params_dict['NeuralNetwork_Settings']['output_shape']]
 
-    data_part = data_part[0:len(data_part) - params_dict['NeuralNetwork_Settings']['timesteps'], :]
+    data_part = data_part[0:len(data_part) - params_dict['NeuralNetwork_Settings']['input_timesteps'], :]
 
     return np.array(data_part), np.array(labels_part)
 
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 def create_dataset_separation_recurrent(path_dict: dict,
                                         params_dict: dict,
@@ -160,6 +181,11 @@ def create_dataset_separation_recurrent(path_dict: dict,
     :param datas:
     :return:
     """
+
+    input_shape = params_dict['NeuralNetwork_Settings']['input_shape']
+    output_shape = params_dict['NeuralNetwork_Settings']['output_shape']
+    input_timesteps = params_dict['NeuralNetwork_Settings']['input_timesteps']
+
     file_counting = 0
     filepath = path_dict['path2inputs_trainingdata']
 
@@ -173,34 +199,26 @@ def create_dataset_separation_recurrent(path_dict: dict,
     lengthsum = 0
 
     for m in range(0, file_counting):
-        lengthsum += (len(datas[m]) - params_dict['NeuralNetwork_Settings']['timesteps'])
+        lengthsum += (len(datas[m]) - input_timesteps)
 
-    data_train = np.zeros((lengthsum * params_dict['NeuralNetwork_Settings']['timesteps'],
-                           params_dict['NeuralNetwork_Settings']['datasets']))  # np.empty((0, params_dict['NeuralNetwork_Settings']['datasets']))
+    data_train = np.zeros((lengthsum * input_timesteps, input_shape))
+    data_labels = np.zeros((lengthsum, output_shape))
 
-    data_labels = np.zeros((lengthsum, params_dict['NeuralNetwork_Settings']['output_shape']))
     lengthsumtwo = 0
     lengthsumtwolabels = 0
 
     for u in range(0, file_counting):
-        data_labels[lengthsumtwolabels:lengthsumtwolabels
-                    + len(datas[u])
-                    - params_dict['NeuralNetwork_Settings']['timesteps']] \
-            = (datas[u])[params_dict['NeuralNetwork_Settings']['timesteps']:,
-                         0:params_dict['NeuralNetwork_Settings']['output_shape']]
+        data_labels[lengthsumtwolabels:lengthsumtwolabels + len(datas[u]) - input_timesteps] \
+            = (datas[u])[input_timesteps:, 0:output_shape]
 
-        for pp in range(0, len(datas[u]) - params_dict['NeuralNetwork_Settings']['timesteps']):
-            idx = lengthsumtwo + pp * params_dict['NeuralNetwork_Settings']['timesteps']
-            data_train[idx:idx + params_dict['NeuralNetwork_Settings']['timesteps'], :] \
-                = (datas[u])[pp:pp + params_dict['NeuralNetwork_Settings']['timesteps'], :]
+        for pp in range(0, len(datas[u]) - input_timesteps):
+            idx = lengthsumtwo + pp * input_timesteps
+            data_train[idx:idx + input_timesteps, :] = (datas[u])[pp:pp + input_timesteps, :]
 
-        lengthsumtwolabels += ((len(datas[u]) - params_dict['NeuralNetwork_Settings']['timesteps']))
-        lengthsumtwo += ((len(datas[u]) - params_dict['NeuralNetwork_Settings']['timesteps'])
-                         * params_dict['NeuralNetwork_Settings']['timesteps'])
+        lengthsumtwolabels += ((len(datas[u]) - input_timesteps))
+        lengthsumtwo += ((len(datas[u]) - input_timesteps) * input_timesteps)
 
-    data_train = np.reshape(data_train, (len(data_train) // params_dict['NeuralNetwork_Settings']['timesteps'],
-                                         params_dict['NeuralNetwork_Settings']['timesteps'],
-                                         params_dict['NeuralNetwork_Settings']['datasets']))
+    data_train = np.reshape(data_train, (len(data_train) // input_timesteps, input_timesteps, input_shape))
 
     indices = np.arange(data_train.shape[0])
 
@@ -213,8 +231,7 @@ def create_dataset_separation_recurrent(path_dict: dict,
     data_train = data_train[indices]
     data_labels = data_labels[indices]
 
-    data_train = np.reshape(data_train, (len(data_labels) * params_dict['NeuralNetwork_Settings']['timesteps'],
-                                         params_dict['NeuralNetwork_Settings']['datasets']))
+    data_train = np.reshape(data_train, (len(data_labels) * input_timesteps, input_shape))
 
     p = int(len(data_train) * (1 - params_dict['NeuralNetwork_Settings']['val_split']))
     mod = p % 5
@@ -225,40 +242,37 @@ def create_dataset_separation_recurrent(path_dict: dict,
                      params_dict=params_dict,
                      dataset=train_x)
 
-    temp = np.zeros((len(data_labels), params_dict['NeuralNetwork_Settings']['datasets']))
-    temp[:, 0:params_dict['NeuralNetwork_Settings']['output_shape']] = data_labels
+    temp = np.zeros((len(data_labels), input_shape))
+    temp[:, 0:output_shape] = data_labels
 
     temp = scaler_run(path2scaler=path_dict['filepath2scaler_save'],
                       params_dict=params_dict,
                       dataset=temp)
 
-    data_labels = temp[:, 0:params_dict['NeuralNetwork_Settings']['output_shape']]
+    data_labels = temp[:, 0:output_shape]
 
-    train_y = data_labels[0:(p // params_dict['NeuralNetwork_Settings']['timesteps']), :]
-    val_y = data_labels[(p // params_dict['NeuralNetwork_Settings']['timesteps']):len(data_labels), :]
+    # prepare training data
+    train_x = np.reshape(train_x, (p // input_timesteps, input_timesteps, input_shape))
 
+    train_y = data_labels[0:(p // input_timesteps), :]
+
+    # prepare validation data
     val_x = data_train[p:len(data_train), :]
     val_x = scaler_run(path2scaler=path_dict['filepath2scaler_save'],
                        params_dict=params_dict,
                        dataset=val_x)
 
-    train_x = np.reshape(train_x, (p // params_dict['NeuralNetwork_Settings']['timesteps'],
-                                   params_dict['NeuralNetwork_Settings']['timesteps'],
-                                   params_dict['NeuralNetwork_Settings']['datasets']))
+    val_x = np.reshape(val_x, ((len(data_train) - p) // input_timesteps, input_timesteps, input_shape))
 
-    val_x = np.reshape(val_x, ((len(data_train) - p) // params_dict['NeuralNetwork_Settings']['timesteps'],
-                               params_dict['NeuralNetwork_Settings']['timesteps'],
-                               params_dict['NeuralNetwork_Settings']['datasets']))
+    val_y = data_labels[(p // input_timesteps):len(data_labels), :]
 
-    # # data_train = np.reshape(data_train, (len(data_train)//params_dict['NeuralNetwork_Settings']['timesteps'], params_dict['NeuralNetwork_Settings']['timesteps'], params_dict['NeuralNetwork_Settings']['datasets']))
-    # # data_labels = np.reshape(data_labels, (len(data_train), 1, params_dict['NeuralNetwork_Settings']['output_shape']))
-    #
-    # # train_x, test_x, train_y, test_y = train_test_split(data_train, data_labels, test_size=params_dict['NeuralNetwork_Settings']['test_split'], random_state=42)
     train_data = (train_x, train_y)
     val_data = (val_x, val_y)
 
     return train_data, val_data
 
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 def create_dataset_separation(path_dict: dict,
                               params_dict: dict,
@@ -267,6 +281,12 @@ def create_dataset_separation(path_dict: dict,
     :param datas:
     :return:
     """
+
+    input_shape = params_dict['NeuralNetwork_Settings']['input_shape']
+    output_shape = params_dict['NeuralNetwork_Settings']['output_shape']
+    input_timesteps = params_dict['NeuralNetwork_Settings']['input_timesteps']
+
+    # count training data files
     file_counting = 0
     filepath = path_dict['path2inputs_trainingdata']
 
@@ -280,32 +300,26 @@ def create_dataset_separation(path_dict: dict,
     lengthsum = 0
 
     for m in range(0, file_counting):
-        lengthsum += (len(datas[m]) - params_dict['NeuralNetwork_Settings']['timesteps'])
+        lengthsum += (len(datas[m]) - input_timesteps)
 
-    data_train = np.zeros((lengthsum * params_dict['NeuralNetwork_Settings']['timesteps'],
-                           params_dict['NeuralNetwork_Settings']['datasets']))  # np.empty((0, params_dict['NeuralNetwork_Settings']['datasets']))
-    data_labels = np.zeros((lengthsum, params_dict['NeuralNetwork_Settings']['output_shape']))
+    data_train = np.zeros((lengthsum * input_timesteps, input_shape))
+    data_labels = np.zeros((lengthsum, output_shape))
+
     lengthsumtwo = 0
     lengthsumtwolabels = 0
 
     for u in range(0, file_counting):
-        data_labels[lengthsumtwolabels:lengthsumtwolabels
-                    + len(datas[u])
-                    - params_dict['NeuralNetwork_Settings']['timesteps']] \
-            = (datas[u])[params_dict['NeuralNetwork_Settings']['timesteps']:,
-                         0:params_dict['NeuralNetwork_Settings']['output_shape']]
+        data_labels[lengthsumtwolabels:lengthsumtwolabels + len(datas[u]) - input_timesteps] \
+            = (datas[u])[input_timesteps:, 0:output_shape]
 
-        for pp in range(0, len(datas[u]) - params_dict['NeuralNetwork_Settings']['timesteps']):
-            idx = lengthsumtwo + pp * params_dict['NeuralNetwork_Settings']['timesteps']
-            data_train[idx:idx + params_dict['NeuralNetwork_Settings']['timesteps'], :] =\
-                (datas[u])[pp:pp + params_dict['NeuralNetwork_Settings']['timesteps'], :]
+        for pp in range(0, len(datas[u]) - input_timesteps):
+            idx = lengthsumtwo + pp * input_timesteps
+            data_train[idx:idx + input_timesteps, :] = (datas[u])[pp:pp + input_timesteps, :]
 
-        lengthsumtwolabels += ((len(datas[u]) - params_dict['NeuralNetwork_Settings']['timesteps']))
-        lengthsumtwo += ((len(datas[u]) - params_dict['NeuralNetwork_Settings']['timesteps'])
-                         * params_dict['NeuralNetwork_Settings']['timesteps'])
+        lengthsumtwolabels += ((len(datas[u]) - input_timesteps))
+        lengthsumtwo += ((len(datas[u]) - input_timesteps) * input_timesteps)
 
-    data_train = np.reshape(data_train, (len(data_labels), params_dict['NeuralNetwork_Settings']['timesteps']
-                                         * params_dict['NeuralNetwork_Settings']['datasets']))
+    data_train = np.reshape(data_train, (len(data_labels), input_timesteps * input_shape))
 
     indices = np.arange(data_train.shape[0])
 
@@ -318,8 +332,7 @@ def create_dataset_separation(path_dict: dict,
     data_train = data_train[indices]
     data_labels = data_labels[indices]
 
-    data_train = np.reshape(data_train, (len(data_labels) * params_dict['NeuralNetwork_Settings']['timesteps'],
-                                         params_dict['NeuralNetwork_Settings']['datasets']))
+    data_train = np.reshape(data_train, (len(data_labels) * input_timesteps, input_shape))
 
     p = int(len(data_train) * (1 - params_dict['NeuralNetwork_Settings']['val_split']))
     mod = p % 5
@@ -330,30 +343,29 @@ def create_dataset_separation(path_dict: dict,
                      params_dict=params_dict,
                      dataset=train_x)
 
-    temp = np.zeros((len(data_labels), params_dict['NeuralNetwork_Settings']['datasets']))
-    temp[:, 0:params_dict['NeuralNetwork_Settings']['output_shape']] = data_labels
+    temp = np.zeros((len(data_labels), input_shape))
+    temp[:, 0:output_shape] = data_labels
 
     temp = scaler_run(path2scaler=path_dict['filepath2scaler_save'],
                       params_dict=params_dict,
                       dataset=temp)
 
-    data_labels = temp[:, 0:params_dict['NeuralNetwork_Settings']['output_shape']]
+    data_labels = temp[:, 0:output_shape]
 
-    train_y = data_labels[0:(p // params_dict['NeuralNetwork_Settings']['timesteps']), :]
-    val_y = data_labels[(p // params_dict['NeuralNetwork_Settings']['timesteps']):len(data_labels), :]
+    # prepare training data
+    train_x = np.reshape(train_x, (p // input_timesteps, input_timesteps * input_shape))
 
+    train_y = data_labels[0:(p // input_timesteps), :]
+
+    # prepare validation data
     val_x = data_train[p:len(data_train), :]
     val_x = scaler_run(path2scaler=path_dict['filepath2scaler_save'],
                        params_dict=params_dict,
                        dataset=val_x)
 
-    train_x = np.reshape(train_x, (p // params_dict['NeuralNetwork_Settings']['timesteps'],
-                                   params_dict['NeuralNetwork_Settings']['timesteps']
-                                   * params_dict['NeuralNetwork_Settings']['datasets']))
+    val_x = np.reshape(val_x, ((len(data_train) - p * input_timesteps), input_timesteps * input_shape))
 
-    val_x = np.reshape(val_x, ((len(data_train) - p * params_dict['NeuralNetwork_Settings']['timesteps']),
-                               params_dict['NeuralNetwork_Settings']['timesteps']
-                               * params_dict['NeuralNetwork_Settings']['datasets']))
+    val_y = data_labels[(p // input_timesteps):len(data_labels), :]
 
     train_data = (train_x, train_y)
     val_data = (val_x, val_y)

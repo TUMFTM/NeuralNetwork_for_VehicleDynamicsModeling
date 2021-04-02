@@ -60,32 +60,28 @@ if params_dict['NeuralNetwork_Settings']['run_file_mode'] == 0:
     sys.exit('SYSTEM EXIT: exit due to run_file_mode is set to zero to avoid testing the neural network against '
              + 'vehicle sensor data')
 
-for i in range(0, params_dict['Test']['n_test']):
+for i_count in range(0, params_dict['Test']['n_test']):
 
-    start = params_dict['Test']['run_timestart'] + i * params_dict['Test']['iteration_step']
-
-    duration = params_dict['Test']['run_timespan']
+    idx_start = params_dict['Test']['run_timestart'] + i_count * params_dict['Test']['iteration_step']
 
     if params_dict['NeuralNetwork_Settings']['run_file_mode'] == 1:
-        print('STARTING RUN FEEDFORWARD')
+        print('STARTING RUN FEEDFORWARD NETWORK')
 
-        src.Neural_Network_Run_File.run_nn(path_dict=path_dict,
-                                           params_dict=params_dict,
-                                           startpoint=start,
-                                           durationspan=duration,
-                                           counter=i)
+        src.run_neuralnetwork.run_nn_feedforward(path_dict=path_dict,
+                                                 params_dict=params_dict,
+                                                 startpoint=idx_start,
+                                                 counter=i_count)
 
     if params_dict['NeuralNetwork_Settings']['run_file_mode'] == 2:
         print('STARTING RUN RECURRENT NETWORK')
 
-        src.Neural_Network_Run_File.run_nn_recurrent(path_dict=path_dict,
-                                                     params_dict=params_dict,
-                                                     startpoint=start,
-                                                     durationspan=duration,
-                                                     counter=i)
+        src.run_neuralnetwork.run_nn_recurrent(path_dict=path_dict,
+                                               params_dict=params_dict,
+                                               startpoint=idx_start,
+                                               counter=i_count)
 
     # save and plot results (if activated in parameter file)
     visualization.plot_results.plot_run(path_dict=path_dict,
                                         params_dict=params_dict,
-                                        counter=i,
-                                        start=start)
+                                        counter=i_count,
+                                        start=idx_start)

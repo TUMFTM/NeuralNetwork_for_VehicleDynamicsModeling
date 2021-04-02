@@ -13,7 +13,7 @@ bool_load_existingmodel = false
 
 # DEFINE SCALER MODE: 0 --> Standard_Dev; 1 --> MinMaxScaler; 2 --> Tanh-Scaler
 scaler_mode = 0     # Standard_dev leads to better results, but slower learning
-shuffle_mode = 1    # 0 --> always different shuffeling; 1 --> Fixed shuffle number
+shuffle_mode = 1    # 0 --> always different shuffeling; 1 --> fixed shuffle number
 shuffle_number = 5
 datasetcount = 14   # how many dataset should be used for training (located in the folder inputs/trainingdata)
 
@@ -27,20 +27,19 @@ save_scaling = true
 [NeuralNetwork_Settings]
 
 # 0 --> NO EXECUTION, 1 --> EXECUTION WITH FEEDFORWARD MODEL, 2 --> EXECUTION WITH RECURRENT MODEL
-model_mode = 1 # training of the neural network
-run_file_mode = 1 # vehicle data (ground trouth) replay and evaluation, comparsion of the neural network
+model_mode = 1      # training of the neural network
+run_file_mode = 1   # vehicle data (ground trouth) replay and evaluation, comparsion of the neural network
 
 # THESE ARE THE TRAIN PARAMETERS OF THE NEURAL NETWORK
-batch_size = 500  # should no be set below 64
+batch_size = 500  # should not be below 64
 val_split = 0.2
 test_split = 0.1
 epochs = 500
 
 # THESE ARE THE DESIGN PARAMETERS OF THE NEURAL NETWORK
-input_shape = 50
-output_shape = 5
-datasets = 10
-timesteps = 5
+input_shape = 10        # number of independent input parameters
+input_timesteps = 5     # number of previous vehicle states to inlcude into neural network input
+output_shape = 5        # number of vehicle states (output of NN); DO NOT CHANGE
 learning_rate = 0.0002  # should not exceed 0.0005
 
 # WEIGHT REGULARIZATION
@@ -60,11 +59,11 @@ patience_LR = 10
 [NeuralNetwork_Settings.Feedforward]
 
 # NUMBER OF NEURONS FIRST AND SECOND LAYER
-neurons_first_layer = 50  # 300
-neurons_second_layer = 50  # 200
+neurons_first_layer = 50
+neurons_second_layer = 50
 
 # ACTIVATION FUNCTIONS OF THE LAYERS
-leakyrelu = 1  # if 1, you use leaky relu. activation 1+2 should be None
+leakyrelu = 1  # if 1, you use leaky relu. activation 1 and 2 should be None
 activation_1 = 'None'
 activation_2 = 'None'
 
@@ -96,14 +95,11 @@ loss_function = 'mean_squared_error'
 activation_end = 'linear'
 
 
+# PARAMETERS FOR THE RUN SEQUENCE
 [Test]
 
-# PARAMETERS FOR THE RUN SEQUENCE
-run_timespan = 2500  # 500 # THE NUMBER IS THE TIMESPAN TIMES THE TIMESTEPS
-run_timestart = 0  # 62790  # 7640  # 5000 # 407,676s=101919
-n_steps = 5
-n_features = 10
-output_shape_recurrent = 5
+run_timespan = 2500     # number of timesteps covered. timespan = number of timesteps * timestep_length
+run_timestart = 0       # start timestep
 
 n_test = 37
-iteration_step = 2500
+iteration_step = 2500   # run a test every iteration_step index (row index of test data file) 

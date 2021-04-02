@@ -86,19 +86,27 @@ The data format is equal to the "data_to_train" files and is described above.
 
 ## Running the code:
 Following steps are necessary to run the training process:
-1. Set the parameters in `/params/parameters.toml` (you can find good hyperparameters to start with in the instructions below)
-2. Set model.mode and run.file.mode (0 --> No usage, 1 --> Feedforward, 2--> Recurrent Model)
-3. Set the optimizer parameters in `/params/parameters.toml`
-4. You can change the model structure in the neural.network.fcn file (This is the main file where you decide how your model looks like)
+1. Open `/params/parameters.toml` and set parameters (you can find good hyperparameters to start with in the instructions below).
+2. Set parameter ``model_mode`` in section ``NeuralNetwork_Settings`` to the Neural Network type which should be used (0 --> No usage, 1 --> Feedforward, 2--> Recurrent Model).
+3. Set optimizer parameters in section ``NeuralNetwork_Settings.Optimizer``.
+4. Change the NN model architecture in ``src/neural_network_fcn.py``.
 5. Set the data standardization/normalization mode in the parameters file (normalization range can be changed in the data.preparation.file)
-7. If you later only want to do the simulation and not the training than turn off the model.mode with 0
-8. It is possible to load an already created model (load.old.model=True)
+
 9. The parameter scaler and the results will be saved in the outputs file
 
+**NOTE**\
+You can train the NN and subsequently test it at once. Set both parameters ``model_mode`` and ``run_mode`` to 1 or 2, respectively.
 
 ### Run Test against real vehicle data
-In ``params/parameters.toml`` set ``NeuralNetwork_Settings.run_file_mode`` to 1 or 2 (depending on which NN should be used for testing: 1 -> Feedforward, 2 -> Recurrent)
-7. It is possible to load an already created model (load.old.model=True, copy the model you want to use into the input file)
+The test mode can be run independently of the model training. Therefore, a already trained model has to be provided in ``/inputs/trainedmodels/``.
+
+1. Set parameter ``model_mode`` in section ``NeuralNetwork_Settings`` to 0 and ``run_mode`` to 1 or 2, respectively (depending on which NN should be used for testing: 1 -> Feedforward, 2 -> Recurrent).
+2. Set parameter ``bool_load_existingmodel`` in section ``General`` to True  c(opy the model you want to use into the input folder).
+3. Adjust parameters in section ``Test``.
+4. Run ``main_NN_Vehicle_dynamics.py``.
+
+if you want to run an already trained model, copy both files ``keras_model.h5`` and ``scaler.plk`` into ``/inputs/trainedmodels/``. The names must be retained.
+These files are generated as a result of the training process and are save in ``/inputs``.
 
 
 ## Some hints on how you could start with your own neural network
