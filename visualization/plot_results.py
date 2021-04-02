@@ -14,7 +14,16 @@ def plot_run(path_dict: dict,
              params_dict: dict,
              counter,
              start):
-    """doc string
+    """Plots test results of comparison between neural network and provided vehicle data.
+
+    :param path_dict:       dictionary which contains paths to all relevant folders and files of this module
+    :type path_dict: dict
+    :param params_dict:    dictionary which contains all parameters necessary to run this module
+    :type params_dict: dict
+    :param counter: [description]
+    :type counter: [type]
+    :param start: [description]
+    :type start: [type]
     """
 
     if params_dict['NeuralNetwork_Settings']['run_file_mode'] == 1:
@@ -85,38 +94,10 @@ def plot_run(path_dict: dict,
     ay_label_scaled = scaler_temp_label[:, 3]
     ax_label_scaled = scaler_temp_label[:, 4]
 
-    # yaw_diff_x = np.absolute(np.subtract(yaw_result, yaw_label))
-    # vy_diff_x = np.absolute(np.subtract(vy_result, vy_label))
-    # vx_diff_x = np.absolute(np.subtract(vx_result, vx_label))
-    #
-    # yaw_diff_perc = np.divide(yaw_diff_x, yaw_label)
-    # vy_diff_perc = np.divide(vy_diff_x, vy_label)
-    # vx_diff_perc = np.divide(vx_diff_x, vx_label)
-    #
-    # deviation_yaw = np.abs((np.divide(np.sum(yaw_diff_perc), len(yaw_diff_perc)))*100)
-    # deviation_vy = np.abs((np.divide(np.sum(vy_diff_perc), len(vy_diff_perc)))*100)
-    # deviation_vx = np.abs((np.divide(np.sum(vx_diff_perc), len(vx_diff_perc)))*100)
-
-    # length_vector = len(yaw_result)
-
-    # def calc_mse(inp, inp_label, length_vec):
-    #     summation = 0
-    #     for i in range(0, length_vec):
-    #         difference = inp[i] - inp_label[i]
-    #         squared_difference = difference**2
-    #         summation = summation + squared_difference
-    #     mse = summation/length_vec
-    #     return str(mse)
-    #
-    # def calc_mae(inp, inp_label, length_vec):
-    #     summation = 0
-    #     for i in range(0, length_vec):
-    #         difference = inp[i] - inp_label[i]
-    #         summation = summation + difference
-    #     mae = summation/length_vec
-    #     return str(mae)
-
     print('\n')
+    print('MSE AND MAE OF UNSCALED VALUES')
+    print('\n')
+
     print('MSE of Yaw No.   ' + str(counter) + ':   ' + str(round(mean_squared_error(yaw_label, yaw_result), 8)))
     print('MSE of Vy No.    ' + str(counter) + ':   ' + str(round(mean_squared_error(vy_label, vy_result), 8)))
     print('MSE of Vx No.    ' + str(counter) + ':   ' + str(round(mean_squared_error(vx_label, vx_result), 8)))
@@ -155,22 +136,7 @@ def plot_run(path_dict: dict,
     print('MAE of ax No.    ' + str(counter) + ':   '
           + str(round(mean_absolute_error(ax_label_scaled, ax_result_scaled), 8)))
 
-    # print('\n')
-    # print('DEVIATION TO MEAN VALE')
-    # print('\n')
-    #
-    # print('DEVIATION Yaw No.   ' + str(counter) + ':   ' + str(round(np.mean(np.absolute(yaw_diff))/np.mean(yaw_label), 8)))
-    # print('DEVIATION Vy No.    ' + str(counter) + ':   ' + str(round(np.mean(np.absolute(vy_diff))/np.mean(vy_label), 8)))
-    # print('DEVIATION Vx No.    ' + str(counter) + ':   ' + str(round(np.mean(np.absolute(vx_diff))/np.mean(vx_label), 8)) + '\n')
-
-    # print('\n')
-    # print('DEVIATION TO MEAN VALE')
-    # print('\n')
-    #
-    # print('DEVIATION Yaw No.   ' + str(counter) + ':   ' + str(round(np.mean(np.absolute(yaw_diff))/np.mean(yaw_label), 8)))
-    # print('DEVIATION Vy No.    ' + str(counter) + ':   ' + str(round(np.mean(np.absolute(vy_diff))/np.mean(vy_label), 8)))
-    # print('DEVIATION Vx No.    ' + str(counter) + ':   ' + str(round(np.mean(np.absolute(vx_diff))/np.mean(vx_label), 8)) + '\n')
-
+    # plot and save comparsion between NN predicted and actual vehicle state
     plot_and_save(params_dict, yaw_result, yaw_label, yaw_diff, 'Yaw rate rad/s',
                   os.path.join(path_dict['path2results_figures'], 'yaw' + str(counter) + '.pdf'))
     plot_and_save(params_dict, vy_result, vy_label, vy_diff, 'Velocity Vy m/s',
@@ -191,11 +157,28 @@ def plot_and_save(params_dict: dict,
                   inp_3,
                   value,
                   savename):
+    """Plots and saves comparison of NN predicted and actual vehicle states values.
 
-    fig, (ax1, ax2) = plt.subplots(2, 1)  # an empty figure with no axes
+    :param params_dict:     dictionary which contains paths to all relevant folders and files of this module
+    :type params_dict: dict
+    :param inp_1:           NN predicted vehicle state value
+    :type inp_1: [type]
+    :param inp_2:           actual vehicle state value from test data
+    :type inp_2: [type]
+    :param inp_3:           calculated difference between predicted and actual vehicle state
+    :type inp_3: [type]
+    :param value:           name of compared vehicle state value
+    :type value: [type]
+    :param savename:        filename where to save plot
+    :type savename: [type]
+    """
+
+    fig, (ax1, ax2) = plt.subplots(2, 1)
+
     ax1.plot(inp_1, label='Result', color='tab:orange')
     ax1.plot(inp_2, label='Label', color='tab:blue')
     ax2.plot(inp_3, label='Difference', color='tab:blue', linewidth=1.0)
+
     ax1.set_ylabel(value)
     ax2.set_ylabel('Difference value')
     ax1.set_xlabel('Time steps (8 ms)')
@@ -215,7 +198,14 @@ def plot_and_save(params_dict: dict,
 def plot_mse(path_dict: dict,
              params_dict: dict,
              histories):
-    """doc string
+    """Plots the MSE of comparion between the neural network's vehicle state output and the real vehicle state.
+
+    :param path_dict:       dictionary which contains paths to all relevant folders and files of this module
+    :type path_dict: dict
+    :param params_dict:    dictionary which contains all parameters necessary to run this module
+    :type params_dict: dict
+    :param histories: [description]
+    :type histories: [type]
     """
 
     # Plot training & validation accuracy values

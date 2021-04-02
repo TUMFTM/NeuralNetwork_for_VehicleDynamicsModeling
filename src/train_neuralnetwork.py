@@ -14,12 +14,14 @@ Created on: 01.04.2020
 def train_neuralnetwork(path_dict: dict,
                         params_dict: dict,
                         nn_mode: str) -> None:
-    """[summary]
+    """Manages the training process of the neural network.
 
-    :param path_dict: [description]
+    :param path_dict:           dictionary which contains paths to all relevant folders and files of this module
     :type path_dict: dict
-    :param params_dict: [description]
+    :param params_dict:         dictionary which contains all parameters necessary to run this module
     :type params_dict: dict
+    :param nn_mode:             Neural network mode which defines type of NN (feedforward or recurrent)
+    :type nn_mode: str
     """
 
     if not nn_mode == "feedforward" or not nn_mode == "recurrent":
@@ -38,7 +40,7 @@ def train_neuralnetwork(path_dict: dict,
     data = src.load_data_for_nn.load_data(path2inputs_trainingdata=path_dict['path2inputs_trainingdata'],
                                           filename_trainingdata=path_dict['filename_trainingdata'])
 
-    # prepare training data for specific neural network archtecture
+    # prepare training data for specific neural network architecture
     if nn_mode == "feedforward":
 
         train_data, val_data = src.prepare_data.create_dataset_separation(path_dict=path_dict,
@@ -84,6 +86,8 @@ def train_neuralnetwork(path_dict: dict,
 
     Nan = TerminateOnNaN()
 
+
+    # Create a new neural network model or loads an existing one.
     model = src.neural_network_fcn.create_nnmodel(path_dict=path_dict,
                                                   params_dict=params_dict,
                                                   nn_mode=nn_mode)

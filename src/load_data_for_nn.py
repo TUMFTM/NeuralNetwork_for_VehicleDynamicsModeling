@@ -9,7 +9,14 @@ Created on: 01.04.2020
 
 def load_data(path2inputs_trainingdata: str,
               filename_trainingdata: str) -> np.array:
-    """doc string
+    """Loads training data for neural network training.
+
+    :param path2inputs_trainingdata:        path to inputs folder which contains training data
+    :type path2inputs_trainingdata: str
+    :param filename_trainingdata:           filename of .csv-file which contains training data to load
+    :type filename_trainingdata: str
+    :return:                                loaded training data
+    :rtype: np.array
     """
 
     file_counting = 0

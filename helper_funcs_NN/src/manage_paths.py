@@ -19,8 +19,9 @@ def manage_paths() -> dict:
     """
 
     # get path to top-level module
-    path_root2module = os.path.join(os.path.dirname(os.path.abspath(__file__)).split('Neural_Network')[0],
-                                    'Neural_Network')
+    path2module = os.path.join(os.path.dirname(os.path.abspath(__file__))
+                               .split('NeuralNetwork_for_VehicleDynamicsModeling')[0],
+                               'NeuralNetwork_for_VehicleDynamicsModeling')
 
     # create datetime-dependent paths
     path_day = datetime.datetime.now().strftime('%Y_%m_%d')
@@ -31,9 +32,9 @@ def manage_paths() -> dict:
 
     # specify paths on top level according to folder structure ---------------------------------------------------------
 
-    path_dict['path2inputs'] = os.path.join(path_root2module, 'inputs')
-    path_dict['path2outputs'] = os.path.join(path_root2module, 'outputs')
-    path_dict['path2params'] = os.path.join(path_root2module, 'params')
+    path_dict['path2inputs'] = os.path.join(path2module, 'inputs')
+    path_dict['path2outputs'] = os.path.join(path2module, 'outputs')
+    path_dict['path2params'] = os.path.join(path2module, 'params')
 
     # specify paths to folders
     path_dict['path2inputs_trainingdata'] = os.path.join(path_dict['path2inputs'], 'trainingdata')

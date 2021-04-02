@@ -57,12 +57,13 @@ if __name__ == '__main__':
     import os.path
 
     # get path to top-level module
-    path_root2module = os.path.join(os.path.dirname(os.path.abspath(__file__)).split('Neural_Network')[0],
-                                    'Neural_Network')
+    path2module = os.path.join(os.path.dirname(os.path.abspath(__file__))
+                               .split('NeuralNetwork_for_VehicleDynamicsModeling')[0],
+                               'NeuralNetwork_for_VehicleDynamicsModeling')
 
     path_dict = dict()
 
-    path_dict['filepath2params'] = os.path.join(path_root2module, "params", "parameters.toml")
+    path_dict['filepath2params'] = os.path.join(path2module, "params", "parameters.toml")
 
     params_dict = handle_params(path_dict=path_dict)
 

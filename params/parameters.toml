@@ -12,7 +12,7 @@ max_scale_plot = 0.01
 bool_load_existingmodel = false
 
 # DEFINE SCALER MODE: 0 --> Standard_Dev; 1 --> MinMaxScaler; 2 --> Tanh-Scaler
-scaler_mode = 0  # Standatd_dev leads to better results, but slower learning
+scaler_mode = 0     # Standard_dev leads to better results, but slower learning
 shuffle_mode = 1    # 0 --> always different shuffeling; 1 --> Fixed shuffle number
 shuffle_number = 5
 datasetcount = 14   # how many dataset should be used for training (located in the folder inputs/trainingdata)

@@ -14,11 +14,11 @@ def create_nnmodel(path_dict: dict,
                    nn_mode: str):
     """Creates a new neural network model or loads an existing one.
 
-    :param path_dict: [description]
+    :param path_dict:           dictionary which contains paths to all relevant folders and files of this module
     :type path_dict: dict
-    :param params_dict: [description]
+    :param params_dict:         dictionary which contains all parameters necessary to run this module
     :type params_dict: dict
-    :param nn_mode: [description]
+    :param nn_mode:             Neural network mode which defines type of NN (feedforward or recurrent)
     :type nn_mode: str
     :return: [description]
     :rtype: [type]
@@ -66,6 +66,15 @@ def create_nnmodel(path_dict: dict,
 
 def create_model_feedforward(path_dict: dict,
                              params_dict: dict):
+    """Set up a new feedforward NN model
+
+    :param path_dict:           dictionary which contains paths to all relevant folders and files of this module
+    :type path_dict: dict
+    :param params_dict:         dictionary which contains all parameters necessary to run this module
+    :type params_dict: dict
+    :return:                    neural network model
+    :rtype: [type]
+    """
 
     print('CREATE FEEDFORWARD NEURAL NETWORK')
 
@@ -115,6 +124,15 @@ def create_model_feedforward(path_dict: dict,
 
 def create_model_recurrent(path_dict: dict,
                            params_dict: dict):
+    """Set up a new recurrent NN model
+
+    :param path_dict:           dictionary which contains paths to all relevant folders and files of this module
+    :type path_dict: dict
+    :param params_dict:         dictionary which contains all parameters necessary to run this module
+    :type params_dict: dict
+    :return:                    neural network model
+    :rtype: [type]
+    """
 
     print('CREATE RECURRENT NEURAL NETWORK')
 
