@@ -58,7 +58,7 @@ def run_nn_feedforward(path_dict: dict,
 
     initial, steeringangle_rad, torqueRL_Nm, torqueRR_Nm, brakepresF_bar, brakepresR_bar = \
         src.prepare_data.create_dataset_separation_run(data, params_dict, startpoint,
-                                                       params_dict['Test']['run_timespan'], 0)
+                                                       params_dict['Test']['run_timespan'], "feedforward")
 
     # load neural network model
     model = keras.models.load_model(path2model)
@@ -157,7 +157,7 @@ def run_nn_recurrent(path_dict: dict,
 
     initial, steeringangle_rad, torqueRL_Nm, torqueRR_Nm, brakepresF_bar, brakepresR_bar = \
         src.prepare_data.create_dataset_separation_run(data, params_dict, startpoint,
-                                                       params_dict['Test']['run_timespan'], 1)
+                                                       params_dict['Test']['run_timespan'], "recurrent")
 
     # load neural network model
     model_recurrent = keras.models.load_model(path2model)

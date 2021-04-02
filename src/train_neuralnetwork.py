@@ -39,11 +39,13 @@ def train_neuralnetwork(path_dict: dict,
                                           filename_trainingdata=path_dict['filename_trainingdata'])
 
     # prepare training data for specific neural network architecture
-    if nn_mode == "feedforward":
 
-        train_data, val_data = src.prepare_data.create_dataset_separation(path_dict=path_dict,
-                                                                          params_dict=params_dict,
-                                                                          datas=data)
+    train_data, val_data = src.prepare_data.create_dataset_separation(path_dict=path_dict,
+                                                                      params_dict=params_dict,
+                                                                      data=data,
+                                                                      nn_mode=nn_mode)
+
+    if nn_mode == "feedforward":
 
         monitor = params_dict['NeuralNetwork_Settings']['Optimizer']['loss_function']
 
@@ -52,10 +54,6 @@ def train_neuralnetwork(path_dict: dict,
         min_delta = 0.000005
 
     elif nn_mode == "recurrent":
-
-        train_data, val_data = src.prepare_data.create_dataset_separation_recurrent(path_dict=path_dict,
-                                                                                    params_dict=params_dict,
-                                                                                    datas=data)
 
         monitor = 'val_' + params_dict['NeuralNetwork_Settings']['Optimizer']['loss_function']
 
@@ -67,7 +65,7 @@ def train_neuralnetwork(path_dict: dict,
     es = EarlyStopping(monitor=monitor,
                        mode='min',
                        verbose=1,
-                       patience=80)
+                       patience=params_dict['NeuralNetwork_Settings']['earlystopping_patience'])
 
     mc = ModelCheckpoint(filepath=filepath2results_trainedmodel,
                          monitor=monitor,

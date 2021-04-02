@@ -125,31 +125,50 @@ def scaler_reverse(path2scaler: str,
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def create_dataset_separation_run(data_in,
+def create_dataset_separation_run(data_test: np.array,
                                   params_dict: dict,
-                                  start,
-                                  duration,
-                                  mode):
+                                  start: int,
+                                  duration: int,
+                                  nn_mode: str) -> tuple:
+    """Creates a dataset to test the neural network against actual vehicle data.
+
+    :param data_test:           vehicle input data of test data file
+    :type data_test: np.array
+    :param params_dict:         dictionary which contains all parameters necessary to run this module
+    :type params_dict: dict
+    :param start:               start index (row) of test data file
+    :type start: int
+    :param duration:            duration of one test setion (as timesteps)
+    :type duration: int
+    :param nn_mode:             Neural network mode which defines type of NN (feedforward or recurrent)
+    :type nn_mode: str
+    :return:                    vehicle input data of test data file
+    :rtype: tuple
+    """
+
+    if not nn_mode == "feedforward" or not nn_mode == "recurrent":
+        ValueError('unknown "neural network mode"; must be either "feedforard" or "recurrent"')
 
     input_shape = params_dict['NeuralNetwork_Settings']['input_shape']
     output_shape = params_dict['NeuralNetwork_Settings']['output_shape']
     input_timesteps = params_dict['NeuralNetwork_Settings']['input_timesteps']
 
-    initials = data_in[start:start + input_timesteps, :]
+    initials = data_test[start:start + input_timesteps, :]
 
-    if mode == 0:
+    if nn_mode == "feedforward":
         initials = np.reshape(initials, (1, input_timesteps * input_shape))
 
-    if mode == 1:
+    elif nn_mode == "recurrent":
         initials = np.reshape(initials, (1, input_timesteps, input_shape))
 
-    steeringangle_rad = data_in[start + input_timesteps:start + duration, output_shape]
+    # get vehicle input data of test data file
+    steeringangle_rad = data_test[start + input_timesteps:start + duration, output_shape]
 
-    torqueRL_Nm = data_in[start + input_timesteps:start + duration, output_shape + 1]
-    torqueRR_Nm = data_in[start + input_timesteps:start + duration, output_shape + 2]
+    torqueRL_Nm = data_test[start + input_timesteps:start + duration, output_shape + 1]
+    torqueRR_Nm = data_test[start + input_timesteps:start + duration, output_shape + 2]
 
-    brakepresF_bar = data_in[start + input_timesteps:start + duration, output_shape + 3]
-    brakepresR_bar = data_in[start + input_timesteps:start + duration, output_shape + 4]
+    brakepresF_bar = data_test[start + input_timesteps:start + duration, output_shape + 3]
+    brakepresR_bar = data_test[start + input_timesteps:start + duration, output_shape + 4]
 
     return initials, steeringangle_rad, torqueRL_Nm, torqueRR_Nm, brakepresF_bar, brakepresR_bar
 
@@ -174,113 +193,26 @@ def extract_part(datax,
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def create_dataset_separation_recurrent(path_dict: dict,
-                                        params_dict: dict,
-                                        datas: dict) -> tuple:
-    """
-    :param datas:
-    :return:
-    """
-
-    input_shape = params_dict['NeuralNetwork_Settings']['input_shape']
-    output_shape = params_dict['NeuralNetwork_Settings']['output_shape']
-    input_timesteps = params_dict['NeuralNetwork_Settings']['input_timesteps']
-
-    file_counting = 0
-    filepath = path_dict['path2inputs_trainingdata']
-
-    if os.path.exists(filepath):
-
-        for file in os.listdir(filepath):
-
-            if file.startswith('data_to_train'):
-                file_counting += 1
-
-    lengthsum = 0
-
-    for m in range(0, file_counting):
-        lengthsum += (len(datas[m]) - input_timesteps)
-
-    data_train = np.zeros((lengthsum * input_timesteps, input_shape))
-    data_labels = np.zeros((lengthsum, output_shape))
-
-    lengthsumtwo = 0
-    lengthsumtwolabels = 0
-
-    for u in range(0, file_counting):
-        data_labels[lengthsumtwolabels:lengthsumtwolabels + len(datas[u]) - input_timesteps] \
-            = (datas[u])[input_timesteps:, 0:output_shape]
-
-        for pp in range(0, len(datas[u]) - input_timesteps):
-            idx = lengthsumtwo + pp * input_timesteps
-            data_train[idx:idx + input_timesteps, :] = (datas[u])[pp:pp + input_timesteps, :]
-
-        lengthsumtwolabels += ((len(datas[u]) - input_timesteps))
-        lengthsumtwo += ((len(datas[u]) - input_timesteps) * input_timesteps)
-
-    data_train = np.reshape(data_train, (len(data_train) // input_timesteps, input_timesteps, input_shape))
-
-    indices = np.arange(data_train.shape[0])
-
-    if params_dict['General']['shuffle_mode']:
-        np.random.RandomState(params_dict['General']['shuffle_number']).shuffle(indices)
-
-    else:
-        np.random.shuffle(indices)
-
-    data_train = data_train[indices]
-    data_labels = data_labels[indices]
-
-    data_train = np.reshape(data_train, (len(data_labels) * input_timesteps, input_shape))
-
-    p = int(len(data_train) * (1 - params_dict['NeuralNetwork_Settings']['val_split']))
-    mod = p % 5
-    p = p - mod
-    train_x = data_train[0:p, :]
-
-    train_x = scaler(path_dict=path_dict,
-                     params_dict=params_dict,
-                     dataset=train_x)
-
-    temp = np.zeros((len(data_labels), input_shape))
-    temp[:, 0:output_shape] = data_labels
-
-    temp = scaler_run(path2scaler=path_dict['filepath2scaler_save'],
-                      params_dict=params_dict,
-                      dataset=temp)
-
-    data_labels = temp[:, 0:output_shape]
-
-    # prepare training data
-    train_x = np.reshape(train_x, (p // input_timesteps, input_timesteps, input_shape))
-
-    train_y = data_labels[0:(p // input_timesteps), :]
-
-    # prepare validation data
-    val_x = data_train[p:len(data_train), :]
-    val_x = scaler_run(path2scaler=path_dict['filepath2scaler_save'],
-                       params_dict=params_dict,
-                       dataset=val_x)
-
-    val_x = np.reshape(val_x, ((len(data_train) - p) // input_timesteps, input_timesteps, input_shape))
-
-    val_y = data_labels[(p // input_timesteps):len(data_labels), :]
-
-    train_data = (train_x, train_y)
-    val_data = (val_x, val_y)
-
-    return train_data, val_data
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-
 def create_dataset_separation(path_dict: dict,
                               params_dict: dict,
-                              datas: dict) -> tuple:
+                              data: dict,
+                              nn_mode: str) -> tuple:
+    """Creates a training and validation dataset out of the provided data.
+
+    :param path_dict:           dictionary which contains paths to all relevant folders and files of this module
+    :type path_dict: dict
+    :param params_dict:         dictionary which contains all parameters necessary to run this module
+    :type params_dict: dict
+    :param data:                complete dataset which should be used for NN training
+    :type data: dict
+    :param nn_mode:             Neural network mode which defines type of NN (feedforward or recurrent)
+    :type nn_mode: str
+    :return:                    training and validation datasets
+    :rtype: tuple
     """
-    :param datas:
-    :return:
-    """
+
+    if not nn_mode == "feedforward" or not nn_mode == "recurrent":
+        ValueError('unknown "neural network mode"; must be either "feedforard" or "recurrent"')
 
     input_shape = params_dict['NeuralNetwork_Settings']['input_shape']
     output_shape = params_dict['NeuralNetwork_Settings']['output_shape']
@@ -297,30 +229,37 @@ def create_dataset_separation(path_dict: dict,
             if file.startswith('data_to_train'):
                 file_counting += 1
 
+    # generate datasets
     lengthsum = 0
+    lengthsumtwo = 0
+    lengthsumtwolabels = 0
 
     for m in range(0, file_counting):
-        lengthsum += (len(datas[m]) - input_timesteps)
+        lengthsum += (len(data[m]) - input_timesteps)
 
     data_train = np.zeros((lengthsum * input_timesteps, input_shape))
     data_labels = np.zeros((lengthsum, output_shape))
 
-    lengthsumtwo = 0
-    lengthsumtwolabels = 0
-
+    # generate the training dataset which contains 'input_timesteps' number of previous data points
     for u in range(0, file_counting):
-        data_labels[lengthsumtwolabels:lengthsumtwolabels + len(datas[u]) - input_timesteps] \
-            = (datas[u])[input_timesteps:, 0:output_shape]
+        data_labels[lengthsumtwolabels:lengthsumtwolabels + len(data[u]) - input_timesteps] \
+            = (data[u])[input_timesteps:, 0:output_shape]
 
-        for pp in range(0, len(datas[u]) - input_timesteps):
+        for pp in range(0, len(data[u]) - input_timesteps):
             idx = lengthsumtwo + pp * input_timesteps
-            data_train[idx:idx + input_timesteps, :] = (datas[u])[pp:pp + input_timesteps, :]
+            data_train[idx:idx + input_timesteps, :] = (data[u])[pp:pp + input_timesteps, :]
 
-        lengthsumtwolabels += ((len(datas[u]) - input_timesteps))
-        lengthsumtwo += ((len(datas[u]) - input_timesteps) * input_timesteps)
+        lengthsumtwolabels += ((len(data[u]) - input_timesteps))
+        lengthsumtwo += ((len(data[u]) - input_timesteps) * input_timesteps)
 
-    data_train = np.reshape(data_train, (len(data_labels), input_timesteps * input_shape))
+    # reshape training dataset
+    if nn_mode == "feedforward":
+        data_train = np.reshape(data_train, (len(data_labels), input_timesteps * input_shape))
 
+    elif nn_mode == "recurrent":
+        data_train = np.reshape(data_train, (len(data_train) // input_timesteps, input_timesteps, input_shape))
+
+    # shuffle training dataset
     indices = np.arange(data_train.shape[0])
 
     if params_dict['General']['shuffle_mode']:
@@ -329,19 +268,17 @@ def create_dataset_separation(path_dict: dict,
     else:
         np.random.shuffle(indices)
 
-    data_train = data_train[indices]
     data_labels = data_labels[indices]
+    data_train = np.reshape(data_train[indices], (len(data_labels) * input_timesteps, input_shape))
 
-    data_train = np.reshape(data_train, (len(data_labels) * input_timesteps, input_shape))
-
+    # split provided dataset into training and validation datasets
     p = int(len(data_train) * (1 - params_dict['NeuralNetwork_Settings']['val_split']))
     mod = p % 5
     p = p - mod
-    train_x = data_train[0:p, :]
 
     train_x = scaler(path_dict=path_dict,
                      params_dict=params_dict,
-                     dataset=train_x)
+                     dataset=data_train[0:p, :])
 
     temp = np.zeros((len(data_labels), input_shape))
     temp[:, 0:output_shape] = data_labels
@@ -353,7 +290,11 @@ def create_dataset_separation(path_dict: dict,
     data_labels = temp[:, 0:output_shape]
 
     # prepare training data
-    train_x = np.reshape(train_x, (p // input_timesteps, input_timesteps * input_shape))
+    if nn_mode == "feedforward":
+        train_x = np.reshape(train_x, (p // input_timesteps, input_timesteps * input_shape))
+
+    elif nn_mode == "recurrent":
+        train_x = np.reshape(train_x, (p // input_timesteps, input_timesteps, input_shape))
 
     train_y = data_labels[0:(p // input_timesteps), :]
 
@@ -363,11 +304,12 @@ def create_dataset_separation(path_dict: dict,
                        params_dict=params_dict,
                        dataset=val_x)
 
-    val_x = np.reshape(val_x, ((len(data_train) - p * input_timesteps), input_timesteps * input_shape))
+    if nn_mode == "feedforward":
+        val_x = np.reshape(val_x, ((len(data_train) - p * input_timesteps), input_timesteps * input_shape))
+
+    elif nn_mode == "recurrent":
+        val_x = np.reshape(val_x, ((len(data_train) - p) // input_timesteps, input_timesteps, input_shape))
 
     val_y = data_labels[(p // input_timesteps):len(data_labels), :]
 
-    train_data = (train_x, train_y)
-    val_data = (val_x, val_y)
-
-    return train_data, val_data
+    return (train_x, train_y), (val_x, val_y)

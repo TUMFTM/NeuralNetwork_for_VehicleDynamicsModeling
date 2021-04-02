@@ -46,6 +46,9 @@ learning_rate = 0.0002  # should not exceed 0.0005
 l2regularization = 0.0001
 l1regularization = 0.0
 
+# Early Stopping Patience
+earlystopping_patience = 80
+
 # DROPOUT PARAMS
 bool_use_dropout = false # true: apply dropout, false: do not apply dropout
 drop_1 = 0  # 0.2
