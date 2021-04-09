@@ -1,8 +1,8 @@
 # Neural Network for Vehicle Dynamics Modeling
 
-## Introduction
-
 This repository provides a neural network training algorithm which is able to substitute a physics-based single-track ("bicycle") model for vehicle dynamics simulation.
+
+## Introduction
 
 Autonomous vehicles have to meet high safety standards
 in order to be commercially viable. Before real-world
@@ -20,7 +20,7 @@ data to represent the vehicle’s dynamic behavior.\
 We present a neural network architecture that aims to
 replace a single-track model for vehicle dynamics modeling.
 
-The model is trained to predict the vehicle state of the next (simulation) timestep by using the current vehicle input together with the current vehicle state plus the vehicle states of the past last four timesteps.
+The model is trained to predict the vehicle state of the next (simulation) timestep by using the current vehicle input together with the current vehicle state plus the vehicle states of the past four timesteps.
 
 The vehicle state consists of:
 * Longitudinal and lateral velocity (in m/s)
@@ -32,15 +32,11 @@ The vehicle input consists of:
 * Torque of rear left and right wheel (in Nm)
 * brake pressure at front and rear (in bar)
 
-The training process of the neural network has two different modes (switch via parameter settings):
-* Mode 1 --> Feedforward Model
-* Mode 2 --> Recurrent Model (GRU, LSTM, ...)
-
 
 ## List of components
 * `helper_funcs_NN`: This package contains helper functions used in several other functions when running the main script for neural network training.
 * `inputs`: This folder contains pre-trained neural network models and/ or vehicle sensor data to train a neural network (or re-train an existing one).
-* `outputs`: This folder contains the the simulation results, figures, the trained neural network, a backup of the used parameters and information on how the input/ output data was scaled before and re-scaled after training.
+* `outputs`: This folder contains the simulation results, figures, the trained neural network, a backup of the used parameters and information on how the input/ output data was scaled before and re-scaled after training.
 * `params`: This folder contains a parameter file to manage all settings.
 * `src`: This folder contains the algorithms necessary to train and validate the neural network.
 * `visualization`: This folder contains algorithms to visualize the training and validation process of the neural network.
@@ -69,57 +65,71 @@ The `.csv` files contain the following information (one per column):
 * `pBrakeF_bar`: brake pressure at front, bar
 * `pBrakeR_bar`: brake pressure at rear, bar
 
-**Please Note:**\
+**Note:**\
 The provided data is exemplary and generated from an existing [vehicle dynamics simulation](https://github.com/TUMFTM/sim_vehicle_dynamics). For the application described in the paper, we did use real vehicle sensor data instead.
 
 ### Training data
-The training data files contain vehicle data which is used to train the neural network in order to model the vehicle's dynamic behavior. All training data filenames must start with "data_to_train" (e.g. "data_to_train_run1.csv"). All files located in this folder and starting with this prefix are then used for training the neural network.
+The training data files contain vehicle data which is used to train the neural network in order to model the vehicle's dynamic behavior. All training data filenames must start with ``data_to_train`` (e.g. "data_to_train_run1.csv"). All files located in this folder and starting with this prefix are then used for training the neural network.
 The data format is described above.
 
-### Test data 
-The test data file contains vehicle data which is used to test the trained neural network. The vehicle sensor data provided in this file is compared against the neural network's vehicle state prediction when receiving the same inputs (as de real vehicle does).
+### Test data
+The test data file contains vehicle data which is used to test the trained neural network. The vehicle sensor data provided in this file is compared against the neural network's vehicle state prediction when receiving the same inputs as the real vehicle does.
 The vehicle input from the provided file (steering angle, torque and brake pressure) is applied to the neural network and the output (vehicle state) is compared to the actual vehicle state from the provided test file.
 
-The name of the test data file has to be "data_to_run.csv".
-The data format is equal to the "data_to_train" files and is described above.
+The name of the test data file is ``data_to_run.csv``.
+The data format is equal to the ``data_to_train`` files and is described above.
 
 
 ## Running the code:
+
+The training process of the neural network has two different modes (switch via parameter settings):
+* Mode 1 --> Feedforward Model
+* Mode 2 --> Recurrent Model (GRU, LSTM, ...)
+
+### Training a new NN model
 Following steps are necessary to run the training process:
 1. Open `/params/parameters.toml` and set parameters (you can find good hyperparameters to start with in the instructions below).
-2. Set parameter ``model_mode`` in section ``NeuralNetwork_Settings`` to the Neural Network type which should be used (0 --> No usage, 1 --> Feedforward, 2--> Recurrent Model).
+2. Set parameter ``model_mode`` in section ``NeuralNetwork_Settings`` to the Neural Network type which should be used (0 --> No training, 1 --> Feedforward, 2--> Recurrent).
 3. Set optimizer parameters in section ``NeuralNetwork_Settings.Optimizer``.
-4. Change the NN model architecture in ``src/neural_network_fcn.py``.
-5. Set the data standardization/normalization mode in the parameters file (normalization range can be changed in the data.preparation.file)
+4. Optional: Change the NN model architecture in ``src/neural_network_fcn.py``, e.g. add a layer.
+5. Run ``main_NN_Vehicle_dynamics.py``.
+6. The results will be saved in the ``\outputs`` folder.
 
-9. The parameter scaler and the results will be saved in the outputs file
-
-**NOTE**\
+**Note:**\
 You can train the NN and subsequently test it at once. Set both parameters ``model_mode`` and ``run_mode`` to 1 or 2, respectively.
 
-### Run Test against real vehicle data
-The test mode can be run independently of the model training. Therefore, a already trained model has to be provided in ``/inputs/trainedmodels/``.
+### Retrain an existing NN model
+An already existing model can be retrained on new training data. Therefore, an existing model has to be provided in ``/inputs/trainedmodels/``.
+
+1. Set parameter ``model_mode`` in section ``NeuralNetwork_Settings`` to 1 or 2, respectively.
+2. Set parameter ``bool_load_existingmodel`` in section ``General`` to True.
+3. Copy new training data into ``/inputs/trainingdata/`` with the above mentioned naming.
+4. Run ``main_NN_Vehicle_dynamics.py``.
+5. The results will be saved in the ``\outputs`` folder.
+
+### Run a test against real vehicle data
+The test mode can be run independently of the model training. Therefore, an already trained model has to be provided in ``/inputs/trainedmodels/``.
+Copy both files ``keras_model.h5`` and ``scaler.plk`` into ``/inputs/trainedmodels/``. The filenames must be retained.
+These files are generated as a result of the training process and are save in ``/outputs``.
 
 1. Set parameter ``model_mode`` in section ``NeuralNetwork_Settings`` to 0 and ``run_mode`` to 1 or 2, respectively (depending on which NN should be used for testing: 1 -> Feedforward, 2 -> Recurrent).
-2. Set parameter ``bool_load_existingmodel`` in section ``General`` to True  c(opy the model you want to use into the input folder).
-3. Adjust parameters in section ``Test``.
+2. Adjust parameters in section ``Test``.
+3. Copy a test data file into ``/inputs/trainingdata/`` with the above mentioned naming.
 4. Run ``main_NN_Vehicle_dynamics.py``.
-
-if you want to run an already trained model, copy both files ``keras_model.h5`` and ``scaler.plk`` into ``/inputs/trainedmodels/``. The names must be retained.
-These files are generated as a result of the training process and are save in ``/inputs``.
+5. The results will be saved in the ``\outputs`` folder.
 
 
 ## Some hints on how you could start with your own neural network
 
 In general:
 *  Begin with a VERY small network size. One layer, 10 neurons for example. If the network does not deliver any results, than a fundamental problem may exist.
-*  Then slowly try to increase the complexity
+*  Then slowly increase the complexity
 *  If not sure, start with the feedforward model. It is much easier to train.
 
-### Possible starting parameters:
+### Possible starting parameter
 
-*  Optimizer Mode = 4 (Nesterov Adam showed the best results)
-*  `Leaky Relu` for feedforward network, `tanh` for recurrent networks
+*  Optimizer Mode = 4 (``Nesterov Adam`` showed the best results)
+*  ``Leaky Relu`` for feedforward network, ``tanh`` for recurrent networks
 *  Output activation has to be linear
 *  Use 2 hidden layers
 *  Use 10 neurons per layer
@@ -129,7 +139,7 @@ In general:
 *  Use Standard Scaler
 *  For recurrent networks, it is usually better to use GRU than LSTM
 
-### Weblinks to search for good Hyperparameters
+### Weblinks to search for suitable hyperparameters
 
 *  [Hyper-parameters in Action! Part II — Weight Initializers](https://towardsdatascience.com/hyper-parameters-in-action-part-ii-weight-initializers-35aee1a28404)
 *  [Activation Functions Explained - GELU, SELU, ELU, ReLU and more](https://mlfromscratch.com/activation-functions-explained/#/)
@@ -141,12 +151,14 @@ In general:
 
 L. Hermansdorfer, R. Trauth, J. Betz and M. Lienkamp, "End-to-End Neural Network for Vehicle Dynamics Modeling," 2020 6th IEEE Congress on Information Science and Technology (CiSt), Agadir - Essaouira, Morocco, 2020, pp. 407-412, doi: 10.1109/CiSt49399.2021.9357196.
 
-Contact: [Leonhard Hermansdorfer](mailto:leo.hermansdorfer@tum.de)
+Contact:
+* [Leonhard Hermansdorfer](mailto:leo.hermansdorfer@tum.de)
+* [Rainer Trauth](mailto:trauth@ftm.mw.tum.de)
 
 Please cite as:
 ```
 @inproceedings{hermansdorfer2020,
-booktitle={2020 6th IEEE Congress on Information Science and Technology (CiSt)}, 
+booktitle={2020 6th IEEE Congress on Information Science and Technology (CiSt)},
 title={End-to-End Neural Network for Vehicle Dynamics Modeling},
 author={Hermansdorfer, Leonhard and Trauth, Rainer and Betz, Johannes and Lienkamp, Markus},
 year={2020},

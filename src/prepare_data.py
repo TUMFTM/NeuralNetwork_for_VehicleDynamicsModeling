@@ -57,15 +57,14 @@ def scaler(path_dict: dict,
             std = np.std(dataset, axis=0)
             dataset_out = 0.5 * (np.tanh(0.01 * ((dataset - m) / std)) + 1)
 
-        if params_dict['General']['save_scaling']:
+        # save scaling information
+        if params_dict['General']['scaler_mode'] == 2:
 
-            if params_dict['General']['scaler_mode'] == 2:
+            with open(os.path.join(path_dict['path2results'], 'scaler_tanh'), 'wb') as f:
+                pickle.dump([m, std], f)
 
-                with open(os.path.join(path_dict['path2results'], 'scaler_tanh'), 'wb') as f:
-                    pickle.dump([m, std], f)
-
-            else:
-                dump(scalers, path_dict['filepath2scaler_save'])
+        else:
+            dump(scalers, path_dict['filepath2scaler_save'])
 
     return dataset_out
 
@@ -75,7 +74,16 @@ def scaler(path_dict: dict,
 def scaler_run(path2scaler: str,
                params_dict: dict,
                dataset: np.array):
-    """doc string
+    """Scales dataset for runing NN test.
+
+    :param path_dict:           dictionary which contains paths to all relevant folders and files of this module
+    :type path_dict: dict
+    :param params_dict:         dictionary which contains all parameters necessary to run this module
+    :type params_dict: dict
+    :param dataset:             dataset which should get scaled
+    :type dataset: np.array
+    :return:                    scaled dataset
+    :rtype: np.array
     """
 
     if params_dict['General']['scaler_mode'] == 2:

@@ -80,7 +80,11 @@ def create_model_feedforward(path_dict: dict,
 
     model_create = keras.models.Sequential()
 
-    kernel_init = keras.initializers.he_uniform(seed=True)
+    if params_dict['NeuralNetwork_Settings']['Initializer'] == "he":
+        kernel_init = keras.initializers.he_uniform(seed=True)
+
+    elif params_dict['NeuralNetwork_Settings']['Initializer'] == "glorot":
+        kernel_init = keras.initializers.GlorotUniform(seed=True)
 
     reg_dense = keras.regularizers.l1_l2(params_dict['NeuralNetwork_Settings']['l1regularization'],
                                          params_dict['NeuralNetwork_Settings']['l2regularization'])
@@ -141,7 +145,11 @@ def create_model_recurrent(path_dict: dict,
 
     model_create = keras.models.Sequential()
 
-    kernel_init = keras.initializers.he_uniform(seed=True)
+    if params_dict['NeuralNetwork_Settings']['Initializer'] == "he":
+        kernel_init = keras.initializers.he_uniform(seed=True)
+
+    elif params_dict['NeuralNetwork_Settings']['Initializer'] == "glorot":
+        kernel_init = keras.initializers.GlorotUniform(seed=True)
 
     reg_layer = keras.regularizers.l1_l2(params_dict['NeuralNetwork_Settings']['l1regularization'],
                                          params_dict['NeuralNetwork_Settings']['l2regularization'])

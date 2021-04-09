@@ -27,7 +27,7 @@ def plot_run(path_dict: dict,
     """
 
     if params_dict['NeuralNetwork_Settings']['run_file_mode'] == 1:
-        filename_model = 'prediction_result'
+        filename_model = 'prediction_result_feedforward'
 
     if params_dict['NeuralNetwork_Settings']['run_file_mode'] == 2:
         filename_model = 'prediction_result_recurrent'
@@ -84,59 +84,60 @@ def plot_run(path_dict: dict,
     ay_label_scaled = scaler_temp_label[:, 4]
 
     # print deviation from label
-    print('\n')
-    print('MSE AND MAE OF UNSCALED VALUES')
-    print('\n')
 
-    print('MSE of Yaw No. ' + str(counter) + ': ' + str(round(mean_squared_error(yaw_label, yaw_result), 8)))
-    print('MSE of Vy No.  ' + str(counter) + ': ' + str(round(mean_squared_error(vy_label, vy_result), 8)))
-    print('MSE of Vx No.  ' + str(counter) + ': ' + str(round(mean_squared_error(vx_label, vx_result), 8)))
-    print('MSE of ay No.  ' + str(counter) + ': ' + str(round(mean_squared_error(ay_label, ay_result), 8)))
-    print('MSE of ax No.  ' + str(counter) + ': ' + str(round(mean_squared_error(ax_label, ax_result), 8)) + '\n')
-
-    print('MAE of Yaw No ' + str(counter) + ': ' + str(round(mean_absolute_error(yaw_label, yaw_result), 8)))
-    print('MAE of Vy No. ' + str(counter) + ': ' + str(round(mean_absolute_error(vy_label, vy_result), 8)))
-    print('MAE of Vx No. ' + str(counter) + ': ' + str(round(mean_absolute_error(vx_label, vx_result), 8)))
-    print('MAE of ay No. ' + str(counter) + ': ' + str(round(mean_absolute_error(ay_label, ay_result), 8)))
-    print('MAE of ax No. ' + str(counter) + ': ' + str(round(mean_absolute_error(ax_label, ax_result), 8)))
+    round_digits = 5
 
     print('\n')
-    print('MSE AND MAE OF SCALED VALUES')
+    print('MSE AND MAE OF UNSCALED VALUES: ' + 'Test No. ' + str(counter))
+
+    data = np.asarray([mean_squared_error(yaw_label, yaw_result),
+                       mean_squared_error(vx_label, vx_result),
+                       mean_squared_error(vy_label, vy_result),
+                       mean_squared_error(ax_label, ax_result),
+                       mean_squared_error(ay_label, ay_result),
+                       mean_absolute_error(yaw_label, yaw_result),
+                       mean_absolute_error(vx_label, vx_result),
+                       mean_absolute_error(vy_label, vy_result),
+                       mean_absolute_error(ax_label, ax_result),
+                       mean_absolute_error(ay_label, ay_result)]).reshape(2, 5).round(round_digits)
+
+    column_header = ['yaw rate', 'long. vel. vx', 'lat. vel. vy', 'long. acc. ax', 'lat. vel. ay']
+    row_header = ['MSE', 'MAE']
+
+    row_format = "{:>15}" * (len(column_header) + 1)
+    print(row_format.format("", *column_header))
+    for row_head, row_data in zip(row_header, data):
+        print(row_format.format(row_head, *row_data))
+
+    print('MSE AND MAE OF SCALED VALUES: ' + 'Test No. ' + str(counter))
+
+    data = np.asarray([mean_squared_error(yaw_label_scaled, yaw_result_scaled),
+                       mean_squared_error(vx_label_scaled, vx_result_scaled),
+                       mean_squared_error(vy_label_scaled, vy_result_scaled),
+                       mean_squared_error(ax_label_scaled, ax_result_scaled),
+                       mean_squared_error(ay_label_scaled, ay_result_scaled),
+                       mean_absolute_error(yaw_label_scaled, yaw_result_scaled),
+                       mean_absolute_error(vx_label_scaled, vx_result_scaled),
+                       mean_absolute_error(vy_label_scaled, vy_result_scaled),
+                       mean_absolute_error(ax_label_scaled, ax_result_scaled),
+                       mean_absolute_error(ay_label_scaled, ay_result_scaled)]).reshape(2, 5).round(round_digits)
+
+    for row_head, row_data in zip(row_header, data):
+        print(row_format.format(row_head, *row_data))
+
     print('\n')
-
-    print('MSE of Yaw No. ' + str(counter) + ': '
-          + str(round(mean_squared_error(yaw_label_scaled, yaw_result_scaled), 8)))
-    print('MSE of Vy No.  ' + str(counter) + ': '
-          + str(round(mean_squared_error(vy_label_scaled, vy_result_scaled), 8)))
-    print('MSE of Vx No.  ' + str(counter) + ': '
-          + str(round(mean_squared_error(vx_label_scaled, vx_result_scaled), 8)))
-    print('MSE of ay No.  ' + str(counter) + ': '
-          + str(round(mean_squared_error(ay_label_scaled, ay_result_scaled), 8)))
-    print('MSE of ax No.  ' + str(counter) + ': '
-          + str(round(mean_squared_error(ax_label_scaled, ax_result_scaled), 8)) + '\n')
-
-    print('MAE of Yaw No. ' + str(counter) + ': '
-          + str(round(mean_absolute_error(yaw_label_scaled, yaw_result_scaled), 8)))
-    print('MAE of Vy No.  ' + str(counter) + ': '
-          + str(round(mean_absolute_error(vy_label_scaled, vy_result_scaled), 8)))
-    print('MAE of Vx No.  ' + str(counter) + ': '
-          + str(round(mean_absolute_error(vx_label_scaled, vx_result_scaled), 8)))
-    print('MAE of ay No.  ' + str(counter) + ': '
-          + str(round(mean_absolute_error(ay_label_scaled, ay_result_scaled), 8)))
-    print('MAE of ax No.  ' + str(counter) + ': '
-          + str(round(mean_absolute_error(ax_label_scaled, ax_result_scaled), 8)))
 
     # plot and save comparsion between NN predicted and actual vehicle state
-    plot_and_save(params_dict, yaw_result, yaw_label, yaw_diff, 'Yaw rate rad/s',
-                  os.path.join(path_dict['path2results_figures'], 'yaw' + str(counter) + '.pdf'))
-    plot_and_save(params_dict, vy_result, vy_label, vy_diff, 'Velocity Vy m/s',
-                  os.path.join(path_dict['path2results_figures'], 'vy' + str(counter) + '.pdf'))
-    plot_and_save(params_dict, vx_result, vx_label, vx_diff, 'Velocity Vx m/s',
-                  os.path.join(path_dict['path2results_figures'], 'vx' + str(counter) + '.pdf'))
-    plot_and_save(params_dict, ay_result, ay_label, ay_diff, 'Velocity ay m/s2',
-                  os.path.join(path_dict['path2results_figures'], 'ay' + str(counter) + '.pdf'))
-    plot_and_save(params_dict, ax_result, ax_label, ax_diff, 'Velocity ax m/s2',
-                  os.path.join(path_dict['path2results_figures'], 'ax' + str(counter) + '.pdf'))
+    plot_and_save(params_dict, yaw_result, yaw_label, yaw_diff, 'Yaw rate in rad/s',
+                  os.path.join(path_dict['path2results_figures'], 'yaw' + str(counter) + '.png'))
+    plot_and_save(params_dict, vy_result, vy_label, vy_diff, 'Lat. vel. vy in m/s',
+                  os.path.join(path_dict['path2results_figures'], 'vy' + str(counter) + '.png'))
+    plot_and_save(params_dict, vx_result, vx_label, vx_diff, 'Long. vel. vx in m/s',
+                  os.path.join(path_dict['path2results_figures'], 'vx' + str(counter) + '.png'))
+    plot_and_save(params_dict, ay_result, ay_label, ay_diff, 'Lat. acc. ay in m/s2',
+                  os.path.join(path_dict['path2results_figures'], 'ay' + str(counter) + '.png'))
+    plot_and_save(params_dict, ax_result, ax_label, ax_diff, 'Long. acc. ax in m/s2',
+                  os.path.join(path_dict['path2results_figures'], 'ax' + str(counter) + '.png'))
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -170,7 +171,7 @@ def plot_and_save(params_dict: dict,
     ax2.plot(inp_3, label='Difference', color='tab:blue', linewidth=1.0)
 
     ax1.set_ylabel(value)
-    ax2.set_ylabel('Difference value')
+    ax2.set_ylabel('Difference label - result')
     ax1.set_xlabel('Time steps (8 ms)')
     ax2.set_xlabel('Time steps (8 ms)')
     ax1.legend()
@@ -180,7 +181,7 @@ def plot_and_save(params_dict: dict,
         plt.show()
 
     if params_dict['General']['save_figures']:
-        fig.savefig(savename, format='pdf')
+        fig.savefig(savename, format='png')
         plt.close(fig)
 
 
@@ -215,4 +216,4 @@ def plot_mse(path_dict: dict,
     plt.legend(['Training loss', 'Validation loss'], loc='upper left')
     plt.show()
 
-    fig.savefig(os.path.join(path_dict['path2results_figures'], 'loss_function.pdf'), format='pdf')
+    fig.savefig(os.path.join(path_dict['path2results_figures'], 'loss_function.png'), format='png')

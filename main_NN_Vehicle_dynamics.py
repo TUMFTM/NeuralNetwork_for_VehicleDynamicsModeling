@@ -8,7 +8,7 @@ import src
 import visualization
 
 """
-Created by: Rainer Trauth
+Created by: Leonhard Hermansdorfer, Rainer Trauth
 Created on: 01.04.2020
 
 Documentation
@@ -67,18 +67,20 @@ for i_count in range(0, params_dict['Test']['n_test']):
     if params_dict['NeuralNetwork_Settings']['run_file_mode'] == 1:
         print('STARTING RUN FEEDFORWARD NETWORK')
 
-        src.run_neuralnetwork.run_nn_feedforward(path_dict=path_dict,
-                                                 params_dict=params_dict,
-                                                 startpoint=idx_start,
-                                                 counter=i_count)
+        src.run_neuralnetwork.run_nn(path_dict=path_dict,
+                                     params_dict=params_dict,
+                                     startpoint=idx_start,
+                                     counter=i_count,
+                                     nn_mode="feedforward")
 
     if params_dict['NeuralNetwork_Settings']['run_file_mode'] == 2:
         print('STARTING RUN RECURRENT NETWORK')
 
-        src.run_neuralnetwork.run_nn_recurrent(path_dict=path_dict,
-                                               params_dict=params_dict,
-                                               startpoint=idx_start,
-                                               counter=i_count)
+        src.run_neuralnetwork.run_nn(path_dict=path_dict,
+                                     params_dict=params_dict,
+                                     startpoint=idx_start,
+                                     counter=i_count,
+                                     nn_mode="recurrent")
 
     # save and plot results (if activated in parameter file)
     visualization.plot_results.plot_run(path_dict=path_dict,

@@ -8,7 +8,7 @@ save_figures = true
 min_scale_plot = 0
 max_scale_plot = 0.01
 
-# LOAD AN ALREADY EXISTING MODEL FOR TRAINING
+# LOAD AN ALREADY EXISTING MODEL FOR RETRAINING
 bool_load_existingmodel = false
 
 # DEFINE SCALER MODE: 0 --> Standard_Dev; 1 --> MinMaxScaler; 2 --> Tanh-Scaler
@@ -27,36 +27,39 @@ save_scaling = true
 [NeuralNetwork_Settings]
 
 # 0 --> NO EXECUTION, 1 --> EXECUTION WITH FEEDFORWARD MODEL, 2 --> EXECUTION WITH RECURRENT MODEL
-model_mode = 1      # training of the neural network
-run_file_mode = 1   # vehicle data (ground trouth) replay and evaluation, comparsion of the neural network
+model_mode = 2      # training of the neural network
+run_file_mode = 2   # vehicle data (ground trouth) replay and evaluation, comparsion of the neural network
 
 # THESE ARE THE TRAIN PARAMETERS OF THE NEURAL NETWORK
-batch_size = 500  # should not be below 64
-val_split = 0.2
+batch_size = 1000
+val_split = 0.25
 test_split = 0.1
-epochs = 500
+epochs = 800
 
 # THESE ARE THE DESIGN PARAMETERS OF THE NEURAL NETWORK
 input_shape = 10        # number of independent input parameters
 input_timesteps = 5     # number of previous vehicle states to inlcude into neural network input
 output_shape = 5        # number of vehicle states (output of NN); DO NOT CHANGE
-learning_rate = 0.0002  # should not exceed 0.0005
+learning_rate = 0.0004  # should not exceed 0.0005
 
 # WEIGHT REGULARIZATION
-l2regularization = 0.0001
+l2regularization = 0.001
 l1regularization = 0.0
 
 # Early Stopping Patience
-earlystopping_patience = 80
-
-# DROPOUT PARAMS
-bool_use_dropout = false # true: apply dropout, false: do not apply dropout
-drop_1 = 0  # 0.2
-drop_2 = 0  # 0.1
+earlystopping_patience = 60
 
 #Reduce LR Factor Callback
 reduceLR_factor = 0.8
 patience_LR = 10
+
+# DROPOUT PARAMS
+bool_use_dropout = false # true: apply dropout, false: do not apply dropout
+drop_1 = 0
+drop_2 = 0
+
+# Initializer ["glorot", "he"]
+Initializer = "he"
 
 
 [NeuralNetwork_Settings.Feedforward]
@@ -66,19 +69,19 @@ neurons_first_layer = 50
 neurons_second_layer = 50
 
 # ACTIVATION FUNCTIONS OF THE LAYERS
-leakyrelu = 1  # if 1, you use leaky relu. activation 1 and 2 should be None
+leakyrelu = 1  # if 1, use leaky relu. activation 1 and 2 should be None
 activation_1 = 'None'
 activation_2 = 'None'
 
 
 [NeuralNetwork_Settings.Recurrent]
 
-# from tensorflow.keras.layers import GRU, LSTM, SimpleRNN, SimpleRNNCell, RNN
-recurrent_mode = 'GRU' # LSTM, GRU, SimpleRNN, ConvLSTM2D, RNN
+# from tensorflow.keras.layers [LSTM, GRU, SimpleRNN, ConvLSTM2D, RNN]
+recurrent_mode = 'GRU'
 
 # NUMBER OF NEURONS OF FIRST AND SECOND LAYER
-neurons_first_layer_recurrent = 50
-neurons_second_layer_recurrent = 50
+neurons_first_layer_recurrent = 150
+neurons_second_layer_recurrent = 150
 
 # ACTIVATION FUNCTIONS OF THE RECURRENT LAYERS
 activation_1_recurrent = 'tanh'
@@ -88,7 +91,7 @@ activation_dense_recurrent = 'tanh'
 [NeuralNetwork_Settings.Optimizer]
 
 # OPTIMIZER SET: ADAM, SGD, RMSPROP, ADADELTA, Nesterov-ADAM
-optimizer_set = 'Nesterov-ADAM'  # Nesterov-ADAM proofed to perform best 
+optimizer_set = 'Nesterov-ADAM'
 clipnorm = 1.0
 
 # LOSS FUNCTION
@@ -101,8 +104,8 @@ activation_end = 'linear'
 # PARAMETERS FOR THE RUN SEQUENCE
 [Test]
 
-run_timespan = 2500     # number of timesteps covered. timespan = number of timesteps * timestep_length
+run_timespan = 1500     # number of timesteps covered. timespan = number of timesteps * timestep_length
 run_timestart = 0       # start timestep
 
 n_test = 37
-iteration_step = 2500   # run a test every iteration_step index (row index of test data file) 
+iteration_step = 1250   # run a test every iteration_step index (row index of test data file) 
