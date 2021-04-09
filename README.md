@@ -122,22 +122,21 @@ These files are generated as a result of the training process and are save in ``
 ## Some hints on how you could start with your own neural network
 
 In general:
-*  Begin with a VERY small network size. One layer, 10 neurons for example. If the network does not deliver any results, than a fundamental problem may exist.
-*  Then slowly increase the complexity
-*  If not sure, start with the feedforward model. It is much easier to train.
+*  Begin with a small network size. One layer, 10 neurons for example. If the network does not deliver any results, than a fundamental problem may exist.
+*  Slowly increase the complexity
+*  If not sure, start with the feedforward model. It is easier to train.
 
 ### Possible starting parameter
 
 *  Optimizer Mode = 4 (``Nesterov Adam`` showed the best results)
 *  ``Leaky Relu`` for feedforward network, ``tanh`` for recurrent networks
-*  Output activation has to be linear
-*  Use 2 hidden layers
-*  Use 10 neurons per layer
-*  Use small learning rate (lr=0.0001)
+*  Linear output activation  
+*  2 hidden layers
+*  10 neurons per layer
+*  Small learning rate (lr=0.0001)
 *  Batch_Size = 128
-*  Validation split = 0.2
-*  Use Standard Scaler
-*  For recurrent networks, it is usually better to use GRU than LSTM
+*  Validation split = 0.25
+*  Standard Scaler
 
 ### Weblinks to search for suitable hyperparameters
 
