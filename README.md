@@ -16,22 +16,11 @@ Their identification requires costly resources, e.g., expensive test
 facilities. Machine learning models enable new approaches to
 perform these modeling tasks without the necessity of identifying
 parameters. Neural networks can be trained with recorded vehicle
-data to represent the vehicle’s dynamic behavior.\
-We present a neural network architecture that aims to
-replace a single-track model for vehicle dynamics modeling.
+data to represent the vehicle’s dynamic behavior.
 
-The model is trained to predict the vehicle state of the next (simulation) timestep by using the current vehicle input together with the current vehicle state plus the vehicle states of the past four timesteps.
+Our model is trained to predict the vehicle state of the next (simulation) timestep by using the current vehicle control input and the current vehicle state plus the vehicle states of the past four timesteps.
 
-The vehicle state consists of:
-* Longitudinal and lateral velocity (in m/s)
-* Yaw rate (in rad/s)
-* Longitudinal and lateral acceleration (in m/s²)
-
-The vehicle input consists of:
-* Steering angle (in rad)
-* Torque of rear left and right wheel (in Nm)
-* brake pressure at front and rear (in bar)
-
+![overview vehicle dynamics model](/resources/overview.png)
 
 ## List of components
 * `helper_funcs_NN`: This package contains helper functions used in several other functions when running the main script for neural network training.
